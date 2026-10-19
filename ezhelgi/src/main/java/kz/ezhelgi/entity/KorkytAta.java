@@ -54,12 +54,14 @@ public class KorkytAta extends PathfinderMob {
                 .add(Attributes.MOVEMENT_SPEED, 0.22);
     }
 
-    /** Очень редко и только там, где его ещё нет. */
+    /**
+     * Очень редко. Здесь нельзя искать других мобов: проверка вызывается и при
+     * генерации чанков, а там соседние чанки ещё не загружены (это вешало создание мира).
+     */
     public static boolean checkSpawnRules(EntityType<? extends PathfinderMob> type, ServerLevelAccessor level, EntitySpawnReason reason,
                                           BlockPos pos, RandomSource random) {
         if (EntitySpawnReason.ignoresLightRequirements(reason)) return true;
-        return random.nextInt(12) == 0 && level.getBlockState(pos.below()).isSolid()
-                && level.getEntitiesOfClass(KorkytAta.class, new net.minecraft.world.phys.AABB(pos).inflate(48.0)).isEmpty();
+        return reason != EntitySpawnReason.CHUNK_GENERATION && random.nextInt(30) == 0 && level.getBlockState(pos.below()).isSolid();
     }
 
     @Override
