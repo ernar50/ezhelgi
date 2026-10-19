@@ -153,6 +153,11 @@ public final class Accessories {
                 player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 300, 0, true, false));
             }
         }
+        // золотая маска на голове: стойкость и ночное зрение
+        if (player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(kz.ezhelgi.item.ModItems.ALTYN_BETPERDE.get())) {
+            player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 60, 0, true, false));
+            player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 300, 0, true, false));
+        }
         if (player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());
         }

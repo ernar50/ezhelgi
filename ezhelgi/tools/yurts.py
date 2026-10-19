@@ -399,12 +399,16 @@ def build_camp(variant):
 
 
 # ------------------------------------------------------------------ курган золотого воина
-def build_burial():
+def build_burial(boss=False):
     rng = random.Random(77)
-    S, H = 29, 16
+    half = 6 if boss else 4          # полуширина камеры
+    ih = 7 if boss else 4            # высота камеры внутри
+    SURF = ih + 1                    # камера целиком под землёй
+    R = 14.5 if boss else 12.5       # радиус насыпи
+    S = 33 if boss else 29
+    H = SURF + int(R * 0.65) + 4
     t = Template(S, H, S)
-    c = 14
-    SURF = 5  # погребальная камера уходит на 5 блоков под землю
+    c = S // 2
 
     def brick():
         r = rng.random()
@@ -414,57 +418,57 @@ def build_burial():
     for x in range(S):
         for z in range(S):
             r = math.hypot(x - c, z - c)
-            if r > 12.5:
+            if r > R:
                 continue
-            top = SURF + int(max(0, (12.5 - r) * 0.65))
+            top = SURF + int(max(0, (R - r) * 0.65))
             for y in range(SURF, top + 1):
                 t.put(x, y, z, "minecraft:grass_block" if y == top else ("minecraft:coarse_dirt" if rng.random() < 0.3 else "minecraft:dirt"),
                       {"snowy": "false"} if y == top else None)
     # каменная камера 9x9 (внутри 7x7), высота 4
-    for x in range(c - 4, c + 5):
-        for z in range(c - 4, c + 5):
+    for x in range(c - half, c + half + 1):
+        for z in range(c - half, c + half + 1):
             t.put(x, 0, z, "minecraft:polished_andesite" if (x + z) % 2 else "minecraft:smooth_stone")
-            t.put(x, 5, z, brick())
-            for y in range(1, 5):
-                edge = x in (c - 4, c + 4) or z in (c - 4, c + 4)
+            t.put(x, SURF, z, brick())
+            for y in range(1, ih + 1):
+                edge = x in (c - half, c + half) or z in (c - half, c + half)
                 t.put(x, y, z, brick() if edge else AIR)
     # золото и саркофаг
     t.put(c, 1, c, "minecraft:gold_block")
     t.put(c, 1, c - 1, "minecraft:gold_block")
     t.put(c, 2, c, e("ornek"))
     t.put(c, 2, c - 1, e("ornek"))
-    for dx in (-3, 3):
-        for dz in (-3, 3):
+    for dx in (-(half - 1), half - 1):
+        for dz in (-(half - 1), half - 1):
             t.put(c + dx, 1, c + dz, "minecraft:gold_block")
             t.put(c + dx, 2, c + dz, "minecraft:soul_lantern", LANTERN)
-    t.put(c - 3, 1, c, "minecraft:chest", {"facing": "east", "type": "single", "waterlogged": "false"},
+    t.put(c - half + 1, 1, c, "minecraft:chest", {"facing": "east", "type": "single", "waterlogged": "false"},
           {"id": (8, "minecraft:chest"), "LootTable": (8, e("chests/altyn_qorym"))})
-    t.put(c + 3, 1, c, "minecraft:chest", {"facing": "west", "type": "single", "waterlogged": "false"},
+    t.put(c + half - 1, 1, c, "minecraft:chest", {"facing": "west", "type": "single", "waterlogged": "false"},
           {"id": (8, "minecraft:chest"), "LootTable": (8, e("chests/altyn_qorym"))})
-    t.put(c, 1, c - 3, "minecraft:skeleton_skull", {"rotation": "0", "powered": "false"})
+    t.put(c, 1, c - half + 1, "minecraft:skeleton_skull", {"rotation": "0", "powered": "false"})
     # коридор-дромос на юг с лестницей вверх
-    for k in range(5, 14):
+    for k in range(half + 1, int(R) + 2):
         z = c + k
-        floor = min(k - 5, SURF - 1)
+        floor = min(k - (half + 1), SURF - 1)
         for x in (c - 1, c, c + 1):
             for y in range(floor, floor + 4):
                 if x == c and floor < y <= floor + 2:
                     t.put(x, y, z, AIR)
                 else:
                     t.put(x, y, z, brick())
-        if 0 < k - 5 <= SURF - 1:
+        if 0 < k - (half + 1) <= SURF - 1:
             t.put(c, floor, z, "minecraft:stone_brick_stairs", {"facing": "south", "half": "bottom", "shape": "straight", "waterlogged": "false"})
     for y in (1, 2):
-        t.put(c, y, c + 4, "minecraft:iron_bars", {"east": "true", "west": "true", "north": "false", "south": "false", "waterlogged": "false"})
+        t.put(c, y, c + half, "minecraft:iron_bars", {"east": "true", "west": "true", "north": "false", "south": "false", "waterlogged": "false"})
     # балбалы и кольцо камней
     for ang in range(0, 360, 30):
-        x = round(c + 13.4 * math.cos(math.radians(ang)))
-        z = round(c + 13.4 * math.sin(math.radians(ang)))
+        x = round(c + (R + 0.9) * math.cos(math.radians(ang)))
+        z = round(c + (R + 0.9) * math.sin(math.radians(ang)))
         if 0 <= x < S and 0 <= z < S:
             t.put(x, SURF, z, "minecraft:mossy_cobblestone")
             if ang % 90 == 0:
                 t.put(x, SURF + 1, z, "minecraft:chiseled_stone_bricks")
-    top_y = SURF + int(12.5 * 0.65) + 1
+    top_y = SURF + int(R * 0.65) + 1
     t.put(c, top_y, c, "minecraft:chiseled_stone_bricks")
     t.put(c, top_y + 1, c, "minecraft:gold_block")
     # стражи: двое пеших внутри, один конный снаружи
@@ -472,4 +476,11 @@ def build_burial():
     t.entity(c - 2 + 0.5, 1, c + 2 + 0.5, warrior(1))
     t.entity(c + 2 + 0.5, 1, c + 2 + 0.5, warrior(1))
     t.entity(c + 3.5, SURF, S - 1.5, warrior(2))
+    if boss:
+        # Алтын Адам ждёт у саркофага; вокруг факелы душ и золото
+        t.entity(c + 0.5, 1, c - 3 + 0.5, {"id": (8, e("altyn_adam")), "PersistenceRequired": (1, 1)})
+        for dx in (-3, 3):
+            for y in range(1, 4):
+                t.put(c + dx, y, c - half + 1, "minecraft:gold_block" if y < 3 else "minecraft:soul_lantern",
+                      None if y < 3 else LANTERN)
     return t

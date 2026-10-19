@@ -8,6 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
@@ -115,6 +116,17 @@ public final class ModItems {
 
     public static final RegistryObject<Item> ALTYN_JAUYNGER_SPAWN_EGG = item("altyn_jauynger_spawn_egg",
             p -> new SpawnEggItem(p.spawnEgg(ModEntities.ALTYN_JAUYNGER.get())));
+    public static final RegistryObject<Item> JUNGAR_SPAWN_EGG = item("jungar_spawn_egg",
+            p -> new SpawnEggItem(p.spawnEgg(ModEntities.JUNGAR.get())));
+    public static final RegistryObject<Item> ALTYN_ADAM_SPAWN_EGG = item("altyn_adam_spawn_egg",
+            p -> new SpawnEggItem(p.spawnEgg(ModEntities.ALTYN_ADAM.get()).rarity(Rarity.EPIC)));
+
+    // ---------- Золотая маска и арба ----------
+    /** Алтын бетперде — золотая маска с высоким красным головным убором (надевается на голову). */
+    public static final RegistryObject<Item> ALTYN_BETPERDE = item("altyn_betperde",
+            p -> new Item(p.stacksTo(1).rarity(Rarity.EPIC).equippable(EquipmentSlot.HEAD)));
+    public static final RegistryObject<Item> ARBA = item("arba",
+            p -> new ArbaItem(p.stacksTo(1)));
 
     // ---------- Золотые украшения в зверином стиле (аксессуары) ----------
     public static final RegistryObject<Item> BARYS_ALQASY = accessory("barys_alqasy",

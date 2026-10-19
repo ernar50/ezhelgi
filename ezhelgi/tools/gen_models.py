@@ -91,8 +91,9 @@ class Model:
                                 custom = painter(fname, xx, yy, fw, fh)
                                 if custom is not None:
                                     src = self.colors[custom] if isinstance(custom, str) else custom
-                            col = tuple(max(0, min(255, int(ch * (shade * grad + n)))) for ch in src)
-                            px[fx + xx, fy + yy] = col + (255,)
+                            col = tuple(max(0, min(255, int(ch * (shade * grad + n)))) for ch in src[:3])
+                            alpha = src[3] if len(src) > 3 else 255
+                            px[fx + xx, fy + yy] = col + (alpha,)
                 # details painted on the front face
                 fx, fy, fw, fh, _ = faces["front"]
                 for (dx, dy, colkey) in extra.get("front", []):
@@ -384,10 +385,69 @@ ber.write_java("BerkutModel", """
             this.wing_l.zRot = -0.08F;
             this.wing_r.zRot = 0.08F;
         }""", "Модель Бүркіта (беркут).")
+
+# ---------------------------------------------------------------- Арба (телега)
+arba = Model("arba", 128, 128, {
+    "wood": (142, 100, 58), "wood_d": (104, 70, 38), "wood_l": (176, 132, 82),
+    "iron": (72, 72, 76), "red": (164, 36, 30), "felt": (226, 214, 190),
+}, 44)
+
+
+def plank_paint(face, x, y, w, h):
+    if face in ("top", "bottom"):
+        return "wood_d" if x % 4 == 3 else ("wood_l" if (x * 5 + y) % 13 == 0 else None)
+    return "wood_d" if y % 3 == 2 else None
+
+
+def wheel_paint(face, x, y, w, h):
+    if face in ("left", "right"):
+        cx, cy = (w - 1) / 2, (h - 1) / 2
+        r = math.hypot(x - cx, y - cy)
+        if r > 6.9:
+            return (0, 0, 0, 0)
+        if r > 5.9:
+            return "iron"
+        if r > 4.9:
+            return "wood_d"
+        if r < 1.6:
+            return "iron"
+        dx, dy = x - cx, y - cy
+        if abs(dx) < 0.8 or abs(dy) < 0.8 or abs(abs(dx) - abs(dy)) < 0.9:
+            return "wood_l"
+        return (0, 0, 0, 0)
+    return (0, 0, 0, 0)
+
+
+def rug_paint(face, x, y, w, h):
+    if x in (0, w - 1) or y in (0, h - 1):
+        return "felt"
+    return "red" if (x + y) % 3 else "felt"
+
+
+arba.part("bed", "root", (0, 14, 0), cubes=[
+    (-8, -2, -11, 16, 2, 22, "wood", {"paint": plank_paint}),
+    (-8, -6, -11, 1, 4, 22, "wood", {"paint": plank_paint}),
+    (7, -6, -11, 1, 4, 22, "wood", {"paint": plank_paint}),
+    (-7, -6, 10, 14, 4, 1, "wood", {"paint": plank_paint}),
+    (-7, -6, -11, 14, 4, 1, "wood", {"paint": plank_paint}),
+    (-6, -3, -9, 12, 1, 6, "red", {"paint": rug_paint}),
+    (-6, -5, -10, 12, 2, 2, "wood_l")])
+arba.part("axle", "root", (0, 17, 1), cubes=[(-9, -1, -1, 18, 2, 2, "wood_d")])
+arba.part("wheel_l", "root", (9.5, 17, 1), cubes=[(-0.5, -7, -7, 1, 14, 14, "wood", {"paint": wheel_paint})])
+arba.part("wheel_r", "root", (-9.5, 17, 1), cubes=[(-0.5, -7, -7, 1, 14, 14, "wood", {"paint": wheel_paint})])
+arba.part("shafts", "root", (0, 14, -11), cubes=[
+    (-6, -1, -22, 1, 1, 22, "wood_d"),
+    (5, -1, -22, 1, 1, 22, "wood_d"),
+    (-6, -1, -20, 12, 1, 1, "wood_d")])
+arba.write_java("ArbaModel", """
+        this.wheel_l.xRot = state.wheel;
+        this.wheel_r.xRot = state.wheel;
+        this.shafts.xRot = 0.12F;""", "Модель арбы — деревянной телеги с большими колёсами.")
+
 if __name__ == "__main__" and os.environ.get("PREVIEW"):
     import preview
     out = os.environ["PREVIEW"]
-    for m in (kok, tul, ber):
+    for m in (kok, tul, ber, arba):
         for yaw in (35, 215):
             preview.render(m.preview_parts, os.path.join(TEX_DIR, m.name + ".png"),
                            os.path.join(out, "%s_%d.png" % (m.name, yaw)), yaw=yaw,

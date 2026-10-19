@@ -1,25 +1,27 @@
 package kz.ezhelgi.item;
 
+import kz.ezhelgi.sound.ModSounds;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 
 /**
- * Домбыра: каждое нажатие ПКМ играет следующую ноту мелодии
- * в пентатонике, похожей на мотив казахского кюя.
+ * Домбыра: зажми ПКМ — батыр держит домбыру двумя руками и играет кюй.
+ * Каждые 3 секунды звучит новая музыкальная фраза (записи синтезированы
+ * как щипок двух струн, строй ре–соль). Музыка бодрит игроков рядом.
  */
 public class DombyraItem extends Item {
-    /** Полутоны относительно ноты фа-диез (0..24, как у нотного блока). */
-    private static final int[] KUI = {
-            6, 9, 11, 13, 11, 9, 6, 4, 6, 9,
-            13, 16, 18, 16, 13, 11, 9, 11, 13, 9,
-            6, 4, 1, 4, 6, 6
-    };
+    private static final int PHRASE_TICKS = 62;
 
     public DombyraItem(Properties properties) {
         super(properties);
@@ -27,22 +29,39 @@ public class DombyraItem extends Item {
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        // Номер ноты по игровому времени, чтобы клиент и сервер играли одно и то же
-        int index = (int) ((level.getGameTime() / 3L) % KUI.length);
-        int note = KUI[index];
-        float pitch = (float) Math.pow(2.0, (note - 12) / 12.0);
-
-        // Бас и звонкая струна вместе звучат как две струны домбыры
-        level.playSound(player, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.NOTE_BLOCK_GUITAR.value(), SoundSource.PLAYERS, 1.0f, pitch);
-        level.playSound(player, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.NOTE_BLOCK_BANJO.value(), SoundSource.PLAYERS, 0.35f, pitch);
-
-        if (level.isClientSide()) {
-            level.addParticle(ParticleTypes.NOTE,
-                    player.getX(), player.getEyeY() + 0.6, player.getZ(),
-                    note / 24.0, 0.0, 0.0);
+        player.startUsingItem(hand);
+        if (level instanceof ServerLevel server) {
+            playPhrase(server, player);
         }
-        return InteractionResult.SUCCESS;
+        return InteractionResult.CONSUME;
+    }
+
+    @Override
+    public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int ticksRemaining) {
+        int used = this.getUseDuration(stack, entity) - ticksRemaining;
+        if (used > 0 && used % PHRASE_TICKS == 0 && level instanceof ServerLevel server) {
+            playPhrase(server, entity);
+        }
+    }
+
+    private static void playPhrase(ServerLevel level, LivingEntity player) {
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                ModSounds.DOMBYRA_KUI.get(), SoundSource.RECORDS, 1.0f, 1.0f);
+        level.sendParticles(ParticleTypes.NOTE, player.getX(), player.getEyeY() + 0.5, player.getZ(),
+                4, 0.6, 0.3, 0.6, 1.0);
+        for (Player near : level.getEntitiesOfClass(Player.class, player.getBoundingBox().inflate(8.0))) {
+            near.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0, true, true));
+            near.addEffect(new MobEffectInstance(MobEffects.SPEED, 120, 0, true, true));
+        }
+    }
+
+    @Override
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
+        return 72000;
+    }
+
+    @Override
+    public ItemUseAnimation getUseAnimation(ItemStack stack) {
+        return ItemUseAnimation.CROSSBOW;
     }
 }

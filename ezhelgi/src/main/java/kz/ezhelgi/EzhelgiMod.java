@@ -5,7 +5,11 @@ import kz.ezhelgi.block.ModBlocks;
 import kz.ezhelgi.client.EzhelgiClient;
 import kz.ezhelgi.accessory.Accessories;
 import kz.ezhelgi.accessory.ModMenus;
+import kz.ezhelgi.entity.AltynAdam;
 import kz.ezhelgi.entity.AltynJauynger;
+import kz.ezhelgi.entity.Arba;
+import kz.ezhelgi.entity.Jungar;
+import kz.ezhelgi.sound.ModSounds;
 import kz.ezhelgi.entity.Berkut;
 import kz.ezhelgi.entity.Kokbori;
 import kz.ezhelgi.entity.ModEntities;
@@ -53,6 +57,7 @@ public final class EzhelgiMod {
         ModBlocks.BLOCKS.register(modBusGroup);
         ModItems.ITEMS.register(modBusGroup);
         ModEntities.ENTITY_TYPES.register(modBusGroup);
+        ModSounds.SOUNDS.register(modBusGroup);
         CREATIVE_TABS.register(modBusGroup);
         ModMenus.MENUS.register(modBusGroup);
         Accessories.init();
@@ -72,6 +77,9 @@ public final class EzhelgiMod {
         event.put(ModEntities.TULPAR.get(), Tulpar.createAttributes().build());
         event.put(ModEntities.BERKUT.get(), Berkut.createAttributes().build());
         event.put(ModEntities.ALTYN_JAUYNGER.get(), AltynJauynger.createAttributes().build());
+        event.put(ModEntities.JUNGAR.get(), Jungar.createAttributes().build());
+        event.put(ModEntities.ALTYN_ADAM.get(), AltynAdam.createAttributes().build());
+        event.put(ModEntities.ARBA.get(), Arba.createAttributes().build());
     }
 
     private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
@@ -83,5 +91,8 @@ public final class EzhelgiMod {
                 Animal::checkAnimalSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.ALTYN_JAUYNGER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        // джунгары бродят по степи и днём
+        event.register(ModEntities.JUNGAR.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkAnyLightMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

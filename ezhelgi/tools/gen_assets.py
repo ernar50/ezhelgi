@@ -1209,11 +1209,14 @@ def yurt_data():
             "placement": {"type": "minecraft:random_spread", "spacing": spacing, "separation": separation, "salt": salt}})
 
     pool("aul/start", [("aul/small", 5), ("aul/medium", 3), ("aul/large", 1)])
-    structure("aul", f"#{NS}:steppe", "aul/start", "beard_box", -1, 36, 14, 772031)
+    structure("aul", f"#{NS}:steppe", "aul/start", "beard_box", -1, 34, 8, 772031)
     pool("camp/start", [("camp/camp_yurt", 1), ("camp/camp_fire", 1)])
     structure("camp", f"#{NS}:has_kurgan", "camp/start", "beard_thin", -1, 18, 6, 553901)
     pool("altyn_qorym/start", [("altyn_qorym", 1)])
     structure("altyn_qorym", f"#{NS}:steppe", "altyn_qorym/start", "beard_thin", -5, 44, 16, 918273)
+    write_template("altyn_adam_qorgany", yurts.build_burial(boss=True))
+    pool("altyn_adam_qorgany/start", [("altyn_adam_qorgany", 1)])
+    structure("altyn_adam_qorgany", f"#{NS}:has_kurgan", "altyn_adam_qorgany/start", "beard_thin", -8, 64, 24, 330517)
     for old_file in (f"{D}/structure/aul.nbt",):
         if os.path.exists(old_file):
             os.remove(old_file)
@@ -1608,12 +1611,6 @@ def v3_data():
     shapeless("aq_oiu", [e("kiiz"), e("kiiz"), "minecraft:brown_dye"], e("aq_oiu"), 2, "building")
     shaped("altyn_qanjar", [" G", "S "], {"G": e("saka_gold"), "S": "minecraft:stick"}, e("altyn_qanjar"), category="equipment")
     G, S = "minecraft:gold_ingot", e("saka_gold")
-    shaped("barys_alqasy", ["SGS", "G G", " D "], {"S": S, "G": G, "D": "minecraft:diamond"}, e("barys_alqasy"), category="equipment")
-    shaped("bugy_tumary", [" S ", "GLG", " G "], {"S": S, "G": G, "L": "minecraft:leather"}, e("bugy_tumary"), category="equipment")
-    shaped("qasqyr_bilezigi", ["GSG", "B B", "GSG"], {"S": S, "G": G, "B": "minecraft:bone"}, e("qasqyr_bilezigi"), category="equipment")
-    shaped("arqar_syrgasy", ["S S", "G G", "E E"], {"S": S, "G": G, "E": "minecraft:emerald"}, e("arqar_syrgasy"), category="equipment")
-    shaped("tulpar_juzigi", [" F ", "GSG", " G "], {"S": S, "G": G, "F": "minecraft:feather"}, e("tulpar_juzigi"), category="equipment")
-    shaped("burkit_belbeui", ["FSF", "GGG"], {"S": S, "G": G, "F": "minecraft:feather"}, e("burkit_belbeui"), category="equipment")
     shaped("qonyr_uy", ["OSO", "QUQ", "MMM"], {"O": e("qonyr_oiu"), "S": e("shanyrak"), "Q": e("qonyr_kiiz_stairs"),
                                                "U": e("kiiz_uy"), "M": e("tekemet")}, e("qonyr_uy"))
     shaped("otau", ["BSB", "KUK", "AAA"], {"B": e("baskur"), "S": e("shanyrak"), "K": e("kiiz_stairs"),
@@ -1669,13 +1666,6 @@ def v3_data():
         "type": "forge:add_spawns", "biomes": f"#{NS}:steppe",
         "spawners": [{"type": e("altyn_jauynger"), "count": {"type": "minecraft:uniform", "min_inclusive": 1, "max_inclusive": 2}, "weight": 4}]})
 
-    # все рецепты мода сразу открыты в книге рецептов
-    recipes = sorted(f"{NS}:" + f[:-5] for f in os.listdir(f"{D}/recipe") if f.endswith(".json"))
-    write_json(f"{D}/advancement/recipes/all.json", {
-        "criteria": {"tick": {"trigger": "minecraft:tick"}},
-        "requirements": [["tick"]],
-        "rewards": {"recipes": recipes}})
-
 
 NAMES.update({
     "item.ezhelgi.altyn_qanjar": ("Золотой кинжал (акинак)", "Алтын қанжар", "Golden Dagger"),
@@ -1706,6 +1696,323 @@ NAMES.update({
 })
 
 
+# ------------------------------------------------------------------ v4: маска, звуки, арба, джунгары, Алтын Адам
+MASK_FACE = [
+    "................",
+    "..llllllllllll..",
+    ".lmmmmmmmmmmmml.",
+    ".lmkkkmmmmkkkml.",
+    ".lmmmmmmmmmmmml.",
+    ".lmkkkkmmkkkkml.",
+    ".lmmmmmmmmmmmml.",
+    ".lmmmmmdmmmmmml.",
+    ".lmmmmmdmmmmmml.",
+    ".lmmmmddddmmmml.",
+    ".lmmmmmmmmmmmml.",
+    ".lmmmkkkkkkmmml.",
+    ".lmmmmmmmmmmmml.",
+    "..lmmmmmmmmmml..",
+    "...ldmmmmmmdl...",
+    "....dddddddd....",
+]
+
+
+def mask_assets():
+    from_art(MASK_FACE, dict(GOLD, k="#3a2412")).save("item/betperde_face")
+    c = Canvas(seed=81)
+    c.rect(0, 0, 15, 15, "#e2a92a")
+    c.noise(0.08)
+    for x in range(16):
+        c.set(x, 0, "#fff3a8"); c.set(x, 15, "#9a6a12")
+    c.save("item/betperde_gold")
+    # красный головной убор с золотыми фигурками зверей
+    c = Canvas(seed=82)
+    c.rect(0, 0, 15, 15, "#9e1d1a")
+    c.noise(0.06)
+    deer = ["..k.k...", "..kkk...", "...kk...", ".kkkkkk.", ".k.kk.k.", ".k....k."]
+    for oy, ox in ((1, 1), (9, 8)):
+        for y, row in enumerate(deer):
+            for x, ch in enumerate(row):
+                if ch == "k":
+                    c.set(ox + x, oy + y, "#e8b23a")
+    c.save("item/betperde_red")
+    c = Canvas(seed=83)
+    c.rect(0, 0, 15, 15, "#e2a92a")
+    for x in range(0, 16, 3):
+        c.set(x, 7, "#2bb5a6"); c.set(x + 1, 8, "#2bb5a6")
+    c.line(0, 3, 15, 3, "#9a6a12"); c.line(0, 12, 15, 12, "#9a6a12")
+    c.noise(0.05)
+    c.save("item/betperde_band")
+
+    def box(fr, to, tex, north=None):
+        faces = {}
+        for d in ("north", "south", "east", "west", "up", "down"):
+            faces[d] = {"uv": [0, 0, 16, 16], "texture": "#" + (north if (d == "north" and north) else tex)}
+        return {"from": fr, "to": to, "faces": faces}
+    elements = [
+        box([3.2, 4.0, 1.0], [12.8, 12.6, 1.6], "gold", north="face"),
+        box([1.2, 2.0, 1.6], [1.6, 13.0, 14.8], "red"),
+        box([14.4, 2.0, 1.6], [14.8, 13.0, 14.8], "red"),
+        box([1.6, 2.0, 14.4], [14.4, 13.0, 14.8], "red"),
+        box([1.2, 12.6, 1.2], [14.8, 14.6, 14.8], "band"),
+        box([1.6, 14.6, 1.6], [14.4, 18.6, 14.4], "red"),
+        box([2.8, 18.6, 2.8], [13.2, 22.6, 13.2], "red"),
+        box([4.0, 22.6, 4.0], [12.0, 26.4, 12.0], "red"),
+        box([5.6, 26.4, 5.6], [10.4, 29.6, 10.4], "red"),
+        box([7.0, 29.6, 7.0], [9.0, 32.0, 9.0], "gold"),
+        box([7.4, 14.6, 1.1], [8.6, 28.0, 1.6], "gold"),
+        box([3.0, 15.0, 1.2], [5.0, 21.0, 1.6], "gold"),
+        box([11.0, 15.0, 1.2], [13.0, 21.0, 1.6], "gold"),
+    ]
+    write_json(f"{A}/models/item/altyn_betperde.json", {
+        "textures": {"face": f"{NS}:item/betperde_face", "gold": f"{NS}:item/betperde_gold",
+                     "red": f"{NS}:item/betperde_red", "band": f"{NS}:item/betperde_band",
+                     "particle": f"{NS}:item/betperde_gold"},
+        "elements": elements,
+        "display": {
+            "gui": {"rotation": [15, 200, 0], "translation": [0, -3.5, 0], "scale": [0.42, 0.42, 0.42]},
+            "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.3, 0.3, 0.3]},
+            "fixed": {"rotation": [0, 180, 0], "translation": [0, -3, 0], "scale": [0.45, 0.45, 0.45]},
+            "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 1, 1], "scale": [0.35, 0.35, 0.35]},
+            "firstperson_righthand": {"rotation": [0, 135, 0], "translation": [0, 2, 0], "scale": [0.35, 0.35, 0.35]},
+            "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}}})
+    write_json(f"{A}/items/altyn_betperde.json", {"model": {"type": "minecraft:model", "model": f"{NS}:item/altyn_betperde"}})
+
+
+def sounds_json():
+    def ev(name, pitch=1.0, volume=1.0):
+        return {"name": name, "type": "event", "pitch": pitch, "volume": volume}
+    write_json(f"{A}/sounds.json", {
+        "item.dombyra.kui": {"subtitle": "subtitles.ezhelgi.dombyra",
+                             "sounds": [{"name": f"{NS}:dombyra/kui{i}"} for i in range(1, 5)]},
+        "entity.altyn_jauynger.ambient": {"subtitle": "subtitles.ezhelgi.warrior",
+                                          "sounds": [ev("minecraft:entity.vindicator.ambient", 0.8), ev("minecraft:entity.pillager.ambient", 0.75)]},
+        "entity.altyn_jauynger.hurt": {"sounds": [ev("minecraft:entity.vindicator.hurt", 0.8)]},
+        "entity.altyn_jauynger.death": {"sounds": [ev("minecraft:entity.vindicator.death", 0.8)]},
+        "entity.altyn_jauynger.cry": {"subtitle": "subtitles.ezhelgi.cry",
+                                      "sounds": [ev("minecraft:entity.vindicator.celebrate", 0.75, 1.5), ev("minecraft:entity.pillager.celebrate", 0.7, 1.5)]},
+        "entity.jungar.ambient": {"subtitle": "subtitles.ezhelgi.jungar",
+                                  "sounds": [ev("minecraft:entity.pillager.ambient", 1.1), ev("minecraft:entity.pillager.celebrate", 1.05)]},
+        "entity.jungar.hurt": {"sounds": [ev("minecraft:entity.pillager.hurt", 1.1)]},
+        "entity.jungar.death": {"sounds": [ev("minecraft:entity.pillager.death", 1.1)]},
+        "entity.altyn_adam.ambient": {"subtitle": "subtitles.ezhelgi.altyn_adam",
+                                      "sounds": [ev("minecraft:entity.evoker.ambient", 0.55, 1.5), ev("minecraft:entity.ravager.ambient", 0.8)]},
+        "entity.altyn_adam.hurt": {"sounds": [ev("minecraft:entity.iron_golem.hurt", 0.8), ev("minecraft:entity.evoker.hurt", 0.6)]},
+        "entity.altyn_adam.death": {"sounds": [ev("minecraft:entity.wither.death", 1.2, 0.8)]},
+        "entity.altyn_adam.roar": {"subtitle": "subtitles.ezhelgi.roar",
+                                   "sounds": [ev("minecraft:entity.ravager.roar", 0.75, 2.0)]},
+        "entity.altyn_adam.slam": {"subtitle": "subtitles.ezhelgi.slam",
+                                   "sounds": [ev("minecraft:entity.generic.explode", 0.7, 1.5), ev("minecraft:block.anvil.land", 0.5, 1.5)]},
+    })
+
+
+def humanoid_skin(path, head_fn, hat_kind, body_kind, arm_kind, leg_kind, extra=None, seed=90):
+    c = Canvas(64, 64, seed=seed)
+    head_fn(c)
+    _box(c, 32, 0, 8, 8, 8, hat_kind, top_kind=hat_kind(0) if callable(hat_kind) else hat_kind)
+    _box(c, 16, 16, 8, 12, 4, body_kind, top_kind="gold" if body_kind(0) == "gold" else body_kind(0), bottom_kind=body_kind(11))
+    _box(c, 40, 16, 4, 12, 4, arm_kind, top_kind=arm_kind(0), bottom_kind="skin")
+    _box(c, 0, 16, 4, 12, 4, leg_kind, top_kind=leg_kind(0), bottom_kind="sole")
+    if extra:
+        extra(c)
+    c.save(path)
+
+
+def face(c, skin, hair, eyes=(240, 240, 240, 255), pupil=(40, 30, 24, 255), beard=None, gold=False):
+    for (u, v) in [(0, 8), (16, 8), (24, 8)]:
+        for yy in range(8):
+            for xx in range(8):
+                c.set(u + xx, v + yy, hair if (yy <= 3 or u == 24) else skin)
+    for xx in range(8):
+        for yy in range(8):
+            c.set(8 + xx, yy, hair)
+            c.set(16 + xx, yy, skin)
+            col = skin
+            if yy <= 1:
+                col = hair
+            if yy == 3 and xx in (1, 2, 5, 6):
+                col = hair
+            if yy == 4 and xx in (1, 6):
+                col = eyes
+            if yy == 4 and xx in (2, 5):
+                col = pupil
+            if beard and yy >= 6 and 1 <= xx <= 6:
+                col = beard
+            c.set(8 + xx, 8 + yy, col)
+
+
+def v4_textures():
+    mask_assets()
+    sounds_json()
+    # дополнительные цвета для костюмов
+    ARMOR.update({"robe": (30, 52, 86, 255), "robe_d": (20, 36, 62, 255), "iron": (120, 124, 132, 255),
+                  "iron_d": (82, 86, 94, 255), "fur": (92, 70, 48, 255), "fur_d": (70, 52, 34, 255),
+                  "sash": (170, 30, 30, 255), "boot": (40, 30, 26, 255), "trous": (110, 30, 26, 255)})
+    old_px = globals()["_armor_px"]
+
+    def px(kind, x, y, w, h, rng):
+        A = ARMOR
+        if kind == "robe":
+            return A["robe"] if (x + y) % 6 else A["robe_d"]
+        if kind == "lamellar":
+            if y % 3 == 0:
+                return A["iron_d"]
+            return A["iron"] if (x + (y // 3)) % 2 else A["iron_d"]
+        if kind == "fur":
+            return A["fur"] if (x * 3 + y) % 4 else A["fur_d"]
+        if kind == "sash":
+            return A["sash"]
+        if kind == "boot":
+            return A["boot"]
+        if kind == "trous":
+            return A["trous"] if (x + y) % 5 else A["robe_d"]
+        if kind == "redtop":
+            return A["sash"]
+        return old_px(kind, x, y, w, h, rng)
+    globals()["_armor_px"] = px
+
+    # Жоңғар: меховая шапка с красным верхом, синий халат с железными пластинами
+    def jungar_head(c):
+        face(c, (196, 150, 108, 255), (24, 20, 18, 255), beard=None)
+        for xx in range(8):
+            c.set(8 + xx, 8 + 6, (60, 40, 30, 255)) if 2 <= xx <= 5 else None
+    humanoid_skin("entity/jungar", jungar_head,
+                  lambda y: "redtop" if y <= 1 else ("fur" if y <= 4 else "none"),
+                  lambda y: "fur" if y == 0 else ("sash" if y in (7, 8) else ("lamellar" if y <= 6 else "robe")),
+                  lambda y: "lamellar" if y <= 3 else ("robe" if y <= 9 else "skin"),
+                  lambda y: "robe" if y <= 3 else ("trous" if y <= 6 else "boot"), seed=91)
+
+    # Алтын Адам: золотое лицо, тяжёлый золотой кафтан
+    def adam_head(c):
+        face(c, (236, 184, 52, 255), (176, 120, 22, 255), eyes=(40, 30, 20, 255), pupil=(20, 14, 10, 255),
+             beard=(214, 160, 40, 255))
+    humanoid_skin("entity/altyn_adam", adam_head,
+                  lambda y: "band" if y <= 2 else "none",
+                  lambda y: "gold" if y in (0, 1) else ("band" if y in (7, 8, 9) else "plaques"),
+                  lambda y: "gold" if y <= 3 or y in (8, 9) else ("skin" if y >= 10 else "plaques"),
+                  lambda y: "plaques" if y <= 5 else ("band" if y == 6 else "gold"), seed=92)
+    globals()["_armor_px"] = old_px
+
+    # яйца призыва и арба
+    def egg(name, base, spots):
+        c = Canvas(seed=hash(name) & 0xff)
+        for y in range(16):
+            for x in range(16):
+                dx, dy = (x - 7.5) / 5.2, (y - 8.8) / 6.6
+                if dy < 0:
+                    dx *= 1.15
+                if dx * dx + dy * dy <= 1:
+                    c.set(x, y, base if (x * 2 + y) % 5 else spots)
+        c.noise(0.05)
+        c.outline("#1c1c1c")
+        c.save("item/" + name)
+    egg("jungar_spawn_egg", "#1e3456", "#787c84")
+    egg("altyn_adam_spawn_egg", "#f2c230", "#9e1d1a")
+    pal = {"o": "#2a1a10", "w": "#8e643a", "W": "#b0844e", "d": "#5e3e20", "i": "#4a4a50", "r": "#a42420"}
+    art = [
+        "................",
+        "................",
+        "................",
+        "................",
+        "..oooooooooooo..",
+        "..oWWWWWWWWWWo..",
+        "..owrrrrrrrrwo..",
+        "..owwwwwwwwwwooo",
+        "..oddddddddddo.o",
+        "..oooooooooooo.o",
+        "...oio....oio..o",
+        "..oiwio..oiwio..",
+        "..owdwo..owdwo..",
+        "..oiwio..oiwio..",
+        "...oio....oio...",
+        "................",
+    ]
+    from_art(art, pal).save("item/arba")
+
+
+def v4_models():
+    for n in ["jungar_spawn_egg", "altyn_adam_spawn_egg", "arba"]:
+        simple_item(n)
+    # домбыра: держится наискось двумя руками
+    write_json(f"{A}/models/item/dombyra.json", {
+        "parent": "minecraft:item/handheld",
+        "textures": {"layer0": f"{NS}:item/dombyra"},
+        "display": {
+            "thirdperson_righthand": {"rotation": [0, 90, -35], "translation": [0, 3, 1], "scale": [1.1, 1.1, 1.1]},
+            "thirdperson_lefthand": {"rotation": [0, -90, 35], "translation": [0, 3, 1], "scale": [1.1, 1.1, 1.1]},
+            "firstperson_righthand": {"rotation": [0, -90, 35], "translation": [1.13, 3.2, 1.13], "scale": [0.8, 0.8, 0.8]}}})
+
+
+def v4_data():
+    e = lambda n: f"{NS}:{n}"
+
+    def it(name, w, lo=1, hi=1):
+        x = {"type": "minecraft:item", "name": name, "weight": w}
+        if hi > 1:
+            x["modifier"] = [{"type": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": lo, "max": hi}}]
+        return x
+    acc = [e(n) for n in ACCESSORY_ART]
+    write_json(f"{D}/loot_table/entities/jungar.json", {
+        "type": "minecraft:entity",
+        "pools": [
+            {"rolls": 1, "entries": [it(e("kurt"), 4, 1, 3), it(e("baursak"), 4, 1, 3), it("minecraft:arrow", 3, 2, 6),
+                                     {"type": "minecraft:empty", "weight": 5}]},
+            {"rolls": 1, "condition": {"type": "minecraft:killed_by_player"},
+             "entries": [it(e("qylysh"), 2), it("minecraft:gold_nugget", 6, 2, 6), it(e("saka_gold"), 1),
+                         {"type": "minecraft:empty", "weight": 12}]}],
+        "random_sequence": f"{NS}:entities/jungar"})
+    write_json(f"{D}/loot_table/entities/altyn_adam.json", {
+        "type": "minecraft:entity",
+        "pools": [
+            {"rolls": 1, "entries": [it(e("altyn_betperde"), 1)]},
+            {"rolls": 1, "entries": [it(e("saka_gold"), 1, 8, 16)]},
+            {"rolls": 2, "entries": [it(a, 1) for a in acc]},
+            {"rolls": 1, "entries": [it(e("altyn_qylysh"), 3), it(e("altyn_adam_chestplate"), 2),
+                                     it(e("altyn_adam_helmet"), 2), it("minecraft:enchanted_golden_apple", 1)]},
+            {"rolls": 1, "entries": [it("minecraft:gold_block", 1, 2, 5)]}],
+        "random_sequence": f"{NS}:entities/altyn_adam"})
+    write_json(f"{D}/loot_table/entities/arba.json", {
+        "type": "minecraft:entity",
+        "pools": [{"rolls": 1, "entries": [it(e("arba"), 1)]}],
+        "random_sequence": f"{NS}:entities/arba"})
+    shaped("arba", ["L L", "PCP", "S S"], {"L": "#minecraft:logs", "P": "#minecraft:planks", "C": "minecraft:chest",
+                                          "S": "minecraft:stick"}, e("arba"))
+    write_json(f"{D}/forge/biome_modifier/add_jungar.json", {
+        "type": "forge:add_spawns", "biomes": f"#{NS}:steppe",
+        "spawners": [{"type": e("jungar"), "count": {"type": "minecraft:uniform", "min_inclusive": 2, "max_inclusive": 4}, "weight": 10}]})
+
+
+def unlock_recipes():
+    # все рецепты мода сразу открыты в книге рецептов
+    recipes = sorted(f"{NS}:" + f[:-5] for f in os.listdir(f"{D}/recipe") if f.endswith(".json"))
+    write_json(f"{D}/advancement/recipes/all.json", {
+        "criteria": {"tick": {"trigger": "minecraft:tick"}},
+        "requirements": [["tick"]],
+        "rewards": {"recipes": recipes}})
+
+
+
+
+NAMES.update({
+    "item.ezhelgi.altyn_betperde": ("Золотая маска Алтын Адама", "Алтын бетперде", "Golden Mask"),
+    "item.ezhelgi.arba": ("Арба (телега)", "Арба", "Arba Cart"),
+    "item.ezhelgi.jungar_spawn_egg": ("Яйцо призыва джунгара", "Жоңғар жұмыртқасы", "Jungar Spawn Egg"),
+    "item.ezhelgi.altyn_adam_spawn_egg": ("Яйцо призыва Алтын Адама", "Алтын Адам жұмыртқасы", "Altyn Adam Spawn Egg"),
+    "entity.ezhelgi.jungar": ("Джунгар", "Жоңғар", "Jungar"),
+    "entity.ezhelgi.altyn_adam": ("Алтын Адам", "Алтын Адам", "Altyn Adam"),
+    "entity.ezhelgi.arba": ("Арба", "Арба", "Arba"),
+    "message.ezhelgi.arba.hitched": ("Арба прицеплена к коню", "Арба атқа жегілді", "Cart hitched to the horse"),
+    "message.ezhelgi.arba.unhitched": ("Арба отцеплена", "Арба ағытылды", "Cart unhitched"),
+    "subtitles.ezhelgi.dombyra": ("Играет домбра", "Домбыра шертіледі", "Dombyra plays"),
+    "subtitles.ezhelgi.warrior": ("Золотой воин бормочет", "Алтын жауынгер", "Golden warrior mutters"),
+    "subtitles.ezhelgi.cry": ("Боевой клич", "Ұран", "Battle cry"),
+    "subtitles.ezhelgi.jungar": ("Джунгар кричит", "Жоңғар айғайлайды", "Jungar shouts"),
+    "subtitles.ezhelgi.altyn_adam": ("Алтын Адам рычит", "Алтын Адам", "Altyn Adam growls"),
+    "subtitles.ezhelgi.roar": ("Рёв Алтын Адама", "Алтын Адамның айқайы", "Altyn Adam roars"),
+    "subtitles.ezhelgi.slam": ("Удар о землю", "Жерге соққы", "Ground slam"),
+})
+
+
 def lang():
     for i, code in enumerate(["ru_ru", "kk_kz", "en_us"]):
         write_json(f"{A}/lang/{code}.json", {k: v[i] for k, v in NAMES.items()})
@@ -1727,5 +2034,9 @@ if __name__ == "__main__":
     v3_textures()
     v3_models()
     v3_data()
+    v4_textures()
+    v4_models()
+    v4_data()
+    unlock_recipes()
     lang()
     print("assets done")

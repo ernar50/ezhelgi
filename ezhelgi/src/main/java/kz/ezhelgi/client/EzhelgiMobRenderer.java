@@ -1,6 +1,7 @@
 package kz.ezhelgi.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import kz.ezhelgi.entity.Arba;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -34,6 +35,10 @@ public class EzhelgiMobRenderer<T extends Mob> extends MobRenderer<T, EzhelgiRen
         state.sitting = entity instanceof TamableAnimal tamable && tamable.isInSittingPose();
         state.flying = !entity.onGround() && !entity.isPassenger();
         state.saddled = !entity.getItemBySlot(EquipmentSlot.SADDLE).isEmpty();
+        if (entity instanceof Arba arba) {
+            state.wheel = arba.wheelRotO + (arba.wheelRot - arba.wheelRotO) * partialTicks;
+            state.flying = false;
+        }
     }
 
     @Override
