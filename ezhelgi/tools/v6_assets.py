@@ -454,7 +454,7 @@ def recipes():
     sh("qobyz", ["  Q", "PLS", "PP "], {"Q": e("kieli_qyl"), "S": "minecraft:string", "P": "#minecraft:planks",
                                         "L": "minecraft:leather"}, e("qobyz"))
     sh("torsyk", [" S ", "L L", "LLL"], {"S": "minecraft:string", "L": "minecraft:leather"}, e("torsyk"))
-    sh("kazy", ["MMS"], {"M": e("pisken_jylqy_eti"), "S": "minecraft:string"}, e("kazy"), 3, "food")
+    sh("kazy", ["MMS"], {"M": e("pisken_jylqy_eti"), "S": "minecraft:string"}, e("kazy"), 3, "misc")
     sh("tas_kaila", ["SSS", " T ", " T "], {"S": e("ezhelgi_tas"), "T": "minecraft:stick"}, e("tas_kaila"), category="equipment")
     sh("tas_balta", ["SS", "ST", " T"], {"S": e("ezhelgi_tas"), "T": "minecraft:stick"}, e("tas_balta"), category="equipment")
     sh("tas_kurek", ["S", "T", "T"], {"S": e("ezhelgi_tas"), "T": "minecraft:stick"}, e("tas_kurek"), category="equipment")
