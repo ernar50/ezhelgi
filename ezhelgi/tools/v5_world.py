@@ -60,6 +60,8 @@ def circle():
     rune(t, c, 2, c)
     rune(t, c, 3, c)
     t.put(c, 4, c, "minecraft:chiseled_stone_bricks")
+    # тень бақсы у древних камней
+    t.entity(c + 2.5, 1, c + 0.5, {"id": (8, e("baqsy_kolenkesi")), "PersistenceRequired": (1, 1)})
     return t
 
 
@@ -74,7 +76,10 @@ def balbal():
         else:
             t.put(x, 1, 1, "minecraft:stone")
             t.put(x, 2, 1, "minecraft:chiseled_stone_bricks")
-        t.put(x, 3, 1, "minecraft:skeleton_skull", {"rotation": "8", "powered": "false"}) if i == 1 else None
+    # средний балбал — живой: днём это просто статуя
+    for y in (1, 2):
+        t.put(4, y, 1, "minecraft:air")
+    t.entity(4.5, 1, 1.5, {"id": (8, e("balbal")), "PersistenceRequired": (1, 1)})
     return t
 
 

@@ -35,6 +35,7 @@ public class EzhelgiMobRenderer<T extends Mob> extends MobRenderer<T, EzhelgiRen
         state.sitting = entity instanceof TamableAnimal tamable && tamable.isInSittingPose();
         state.flying = !entity.onGround() && !entity.isPassenger();
         state.saddled = !entity.getItemBySlot(EquipmentSlot.SADDLE).isEmpty();
+        state.male = entity instanceof kz.ezhelgi.entity.Saiga saiga && saiga.isMale();
         if (entity instanceof Arba arba) {
             state.wheel = arba.wheelRotO + (arba.wheelRot - arba.wheelRotO) * partialTicks;
             state.flying = false;

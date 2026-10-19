@@ -355,36 +355,83 @@ tul.write_java("TulparModel", """
 
 # ---------------------------------------------------------------- Бүркіт
 ber = Model("berkut", 64, 64, {
-    "feather": (96, 64, 40), "dark": (58, 39, 24), "head": (196, 146, 74),
-    "beak": (238, 196, 62), "eye": (20, 15, 10), "white": (236, 230, 220),
+    "feather": (92, 60, 36), "dark": (52, 34, 20), "light": (128, 88, 52), "nape": (214, 160, 78),
+    "nape_l": (238, 196, 110), "beak": (60, 56, 52), "cere": (240, 200, 60), "eye": (30, 18, 8),
+    "eye_ring": (200, 140, 40), "white": (240, 236, 226), "talon": (236, 196, 60), "claw": (30, 26, 24),
 }, 33)
-ber.part("body", "root", (0, 19, 0), cubes=[(-2.5, -3, -3, 5, 6, 7, "feather")])
-ber.part("head", "root", (0, 16, -2.5), cubes=[(-2, -4, -2.5, 4, 4, 4, "head", {"front": [(0, 1, "eye"), (3, 1, "eye")]}),
-                                               (-1, -2.5, -4.5, 2, 2, 2, "beak")])
-ber.part("wing_l", "root", (2.5, 16.5, -2), cubes=[(0, 0, 0, 1, 7, 9, "dark")])
-ber.part("wing_r", "root", (-2.5, 16.5, -2), cubes=[(-1, 0, 0, 1, 7, 9, "dark")])
-ber.part("tail", "root", (0, 21, 4), (-0.4, 0, 0), cubes=[(-2, 0, 0, 4, 1, 5, "dark", {"tip": "white"})])
-ber.part("leg_l", "root", (1.2, 22, 0.5), cubes=[(-0.5, 0, -0.5, 1, 2, 1, "beak")])
-ber.part("leg_r", "root", (-1.2, 22, 0.5), cubes=[(-0.5, 0, -0.5, 1, 2, 1, "beak")])
+
+
+def ber_body(face, x, y, w, h):
+    if face == "bottom":
+        return "light"
+    if (x + y * 2) % 5 == 0:
+        return "dark"
+    if (x * 3 + y) % 7 == 0:
+        return "light"
+    return None
+
+
+def ber_head(face, x, y, w, h):
+    if face in ("left", "right") and y == 1 and x in (w - 2, w - 3):
+        return "eye" if x == w - 2 else "eye_ring"
+    if face == "front" and y == 1 and x in (0, w - 1):
+        return "eye"
+    if face in ("top", "back") or (face in ("left", "right") and x < 2):
+        return "nape_l" if (x + y) % 3 == 0 else "nape"
+    return "feather" if y >= h - 1 else None
+
+
+def ber_wing(face, x, y, w, h):
+    # маховые перья: светлые края, тёмные концы
+    if y >= h - 3:
+        return "dark" if x % 2 == 0 else "feather"
+    if y % 3 == 0:
+        return "light"
+    return "feather" if (x + y) % 4 else "dark"
+
+
+def ber_tail(face, x, y, w, h):
+    if face in ("top", "bottom"):
+        return "white" if y < h - 2 else "dark"
+    return "dark"
+
+
+ber.part("body", "root", (0, 18, 0), (-0.25, 0, 0), cubes=[(-3, -3.5, -3.5, 6, 7, 8, "feather", {"paint": ber_body}),
+                                                          (-2.5, -2.5, -4.5, 5, 5, 1.5, "light", {"paint": ber_body})])
+ber.part("head", "root", (0, 14.5, -3), cubes=[(-2, -4, -3, 4, 4, 4, "nape", {"paint": ber_head}),
+                                               (-1, -3, -4.5, 2, 1.5, 1.5, "cere"),
+                                               (-0.75, -2.5, -5.5, 1.5, 2.5, 1.2, "beak")])
+ber.part("wing_l", "root", (3, 15, -2.5), cubes=[(0, 0, 0, 1, 7, 9, "feather", {"paint": ber_wing}),
+                                                 (0, 6, 3, 1, 3, 6, "dark", {"paint": ber_wing})])
+ber.part("wing_r", "root", (-3, 15, -2.5), cubes=[(-1, 0, 0, 1, 7, 9, "feather", {"paint": ber_wing}),
+                                                  (-1, 6, 3, 1, 3, 6, "dark", {"paint": ber_wing})])
+ber.part("tail", "root", (0, 20.5, 4), (-0.35, 0, 0), cubes=[(-2.5, 0, 0, 5, 1, 6, "white", {"paint": ber_tail})])
+ber.part("leg_l", "root", (1.5, 21, 0.5), cubes=[(-1, -0.5, -1, 2, 2, 2, "light"), (-0.5, 1.5, -0.5, 1, 1.5, 1, "talon"),
+                                               (-1, 2.5, -1.5, 2, 0.5, 2, "claw")])
+ber.part("leg_r", "root", (-1.5, 21, 0.5), cubes=[(-1, -0.5, -1, 2, 2, 2, "light"), (-0.5, 1.5, -0.5, 1, 1.5, 1, "talon"),
+                                                (-1, 2.5, -1.5, 2, 0.5, 2, "claw")])
 ber.write_java("BerkutModel", """
         this.head.yRot = headYaw;
         this.head.xRot = headPitch;
         if (state.flying) {
-            float flap = Mth.sin(age * 0.9F) * 0.55F;
-            this.wing_l.zRot = -1.45F + flap;
-            this.wing_r.zRot = 1.45F - flap;
-            this.wing_l.xRot = 0.15F;
-            this.wing_r.xRot = 0.15F;
-            this.leg_l.xRot = 0.9F;
-            this.leg_r.xRot = 0.9F;
-            this.tail.xRot = -0.1F;
+            float flap = Mth.sin(age * 0.6F) * 0.55F;
+            this.wing_l.zRot = -1.5F + flap;
+            this.wing_r.zRot = 1.5F - flap;
+            this.wing_l.xRot = 0.1F;
+            this.wing_r.xRot = 0.1F;
+            this.leg_l.xRot = 1.0F;
+            this.leg_r.xRot = 1.0F;
+            this.tail.xRot = -0.05F;
+            this.body.xRot = 0.1F;
         } else {
             float step = Mth.cos(limbPos * 0.6662F) * 1.2F * limbSpeed;
             this.leg_l.xRot = step;
             this.leg_r.xRot = -step;
-            this.wing_l.zRot = -0.08F;
-            this.wing_r.zRot = 0.08F;
-        }""", "Модель Бүркіта (беркут).")
+            this.wing_l.zRot = -0.06F;
+            this.wing_r.zRot = 0.06F;
+            this.wing_l.xRot = 0.12F;
+            this.wing_r.xRot = 0.12F;
+        }""", "Модель Бүркіта (беркут): золотистый затылок, белое основание хвоста.")
 
 # ---------------------------------------------------------------- Арба (телега)
 arba = Model("arba", 128, 128, {
@@ -562,10 +609,123 @@ sam.write_java("SamurykModel", """
             }
         }""", "Модель Самұрыка — огромной золотой птицы.")
 
+# ---------------------------------------------------------------- Ақбөкен (сайгак)
+sai = Model("aqboken", 64, 64, {
+    "coat": (206, 170, 120), "coat_d": (176, 140, 94), "belly": (244, 236, 220), "nose": (190, 154, 108),
+    "nose_d": (120, 96, 70), "eye": (24, 18, 12), "hoof": (60, 48, 38), "horn": (232, 214, 150), "horn_d": (180, 150, 90),
+}, 66)
+
+
+def sai_coat(face, x, y, w, h):
+    if face == "bottom" or (face in ("left", "right") and y >= h - 2):
+        return "belly"
+    if face == "top" and (x + y) % 5 == 0:
+        return "coat_d"
+    return None
+
+
+def sai_head(face, x, y, w, h):
+    if face in ("left", "right") and y == 1 and x in (2, 3):
+        return "eye" if x == 2 else None
+    return sai_coat(face, x, y, w, h)
+
+
+def horn_paint(face, x, y, w, h):
+    return "horn_d" if y % 2 else "horn"
+
+
+sai.part("body", "root", (0, 13, 0), cubes=[(-3, -3, -7, 6, 6, 13, "coat", {"paint": sai_coat})])
+sai.part("neck", "root", (0, 11.5, -6), (1.0, 0, 0), cubes=[(-1.5, -4.5, -2, 3, 5.5, 3.5, "coat", {"paint": sai_coat})])
+sai.part("head", "neck", (0, -4, 0), (-1.0, 0, 0), cubes=[
+    (-2, -3, -5, 4, 4, 6, "coat", {"paint": sai_head}),
+    (-1.75, -2.8, -7.2, 3.5, 3.3, 2.5, "nose", {"paint": lambda f, x, y, w, h: "nose_d" if f == "front" and y >= h - 2 else None}),
+    (-1.3, 0.2, -7.4, 2.6, 1.6, 1.6, "nose_d"),
+    (-3, -4, 0, 1, 2, 1, "coat"), (2, -4, 0, 1, 2, 1, "coat")])
+sai.part("horns", "head", (0, -3, -2), cubes=[(-1.8, -4.5, -0.4, 0.8, 4.5, 0.8, "horn", {"paint": horn_paint}),
+                                             (1.0, -4.5, -0.4, 0.8, 4.5, 0.8, "horn", {"paint": horn_paint})])
+sai.part("tail", "root", (0, 11, 6), (0.6, 0, 0), cubes=[(-0.5, 0, 0, 1, 3, 1, "coat_d")])
+for leg, (x, z) in {"leg_fl": (-2, -5), "leg_fr": (2, -5), "leg_bl": (-2, 4.5), "leg_br": (2, 4.5)}.items():
+    sai.part(leg, "root", (x, 16, z), cubes=[(-0.8, 0, -0.8, 1.6, 7, 1.6, "coat", {"paint": sai_coat}),
+                                            (-0.8, 7, -0.8, 1.6, 1, 1.6, "hoof")])
+sai.write_java("SaigaModel", """
+        this.horns.visible = state.male;
+        this.neck.yRot = headYaw * 0.7F;
+        this.head.xRot += headPitch * 0.5F;
+        float swing = Mth.cos(limbPos * 0.6662F) * 1.3F * limbSpeed;
+        this.leg_fl.xRot = swing;
+        this.leg_br.xRot = swing;
+        this.leg_fr.xRot = -swing;
+        this.leg_bl.xRot = -swing;
+        this.tail.xRot += Mth.sin(age * 0.3F) * 0.2F;""", "Модель ақбөкена (сайгака) с горбатым носом и рогами у самцов.")
+
+# ---------------------------------------------------------------- Барыс (снежный барс)
+bar = Model("barys", 128, 64, {
+    "fur": (214, 210, 200), "fur_d": (180, 176, 168), "belly": (244, 242, 236), "spot": (48, 46, 46),
+    "spot_c": (150, 140, 120), "eye": (150, 190, 120), "pupil": (20, 20, 20), "nose": (170, 120, 120),
+}, 77)
+
+
+def rosette(face, x, y, w, h):
+    if face == "bottom":
+        return "belly"
+    k = (x * 5 + y * 7 + (x // 3) * 11) % 13
+    if k in (0, 1):
+        return "spot"
+    if k == 2:
+        return "spot_c"
+    if face in ("left", "right") and y >= h - 1:
+        return "belly"
+    return None
+
+
+def bar_head(face, x, y, w, h):
+    if face == "front":
+        if y == 1 and x in (1, w - 2):
+            return "eye"
+        if y == 1 and x in (0, w - 1):
+            return "pupil"
+    if face in ("top", "back") and (x + y) % 4 == 0:
+        return "spot"
+    return None
+
+
+def tail_ring(face, x, y, w, h):
+    if face in ("top", "bottom", "left", "right"):
+        return "spot" if y % 4 == 0 else ("fur_d" if y % 4 == 1 else None)
+    return None
+
+
+bar.part("body", "root", (0, 15, 0), cubes=[(-2.5, -3, -8, 5, 5.5, 15, "fur", {"paint": rosette})])
+bar.part("head", "root", (0, 13, -8), cubes=[
+    (-2.5, -3, -4, 5, 4.5, 5, "fur", {"paint": bar_head}),
+    (-1.5, -0.8, -5.3, 3, 2, 1.5, "belly", {"paint": lambda f, x, y, w, h: "nose" if f == "front" and y == 0 and x == 1 else None}),
+    (-2.6, -4.2, -1.5, 1.4, 1.4, 1, "fur_d"), (1.2, -4.2, -1.5, 1.4, 1.4, 1, "fur_d")])
+bar.part("tail", "root", (0, 13, 7), (-0.25, 0, 0), cubes=[(-1.4, -1.4, 0, 2.8, 2.8, 9, "fur", {"paint": tail_ring})])
+bar.part("tail2", "tail", (0, 0, 9), (0.7, 0, 0), cubes=[(-1.5, -1.5, 0, 3, 3, 8, "fur", {"paint": tail_ring})])
+for leg, (x, z) in {"leg_fl": (-1.6, -6), "leg_fr": (1.6, -6), "leg_bl": (-1.6, 5.5), "leg_br": (1.6, 5.5)}.items():
+    bar.part(leg, "root", (x, 17, z), cubes=[(-1.1, 0, -1.1, 2.2, 7, 2.2, "fur", {"paint": rosette})])
+bar.write_java("BarysModel", """
+        this.head.yRot = headYaw;
+        this.head.xRot = headPitch;
+        float swing = Mth.cos(limbPos * 0.6662F) * 1.2F * limbSpeed;
+        this.leg_fl.xRot = swing;
+        this.leg_br.xRot = swing;
+        this.leg_fr.xRot = -swing;
+        this.leg_bl.xRot = -swing;
+        this.tail.yRot = Mth.sin(age * 0.08F) * 0.3F;
+        this.tail2.xRot += Mth.sin(age * 0.11F) * 0.15F;
+        if (state.flying) {
+            this.leg_fl.xRot = -0.9F;
+            this.leg_fr.xRot = -0.9F;
+            this.leg_bl.xRot = 0.9F;
+            this.leg_br.xRot = 0.9F;
+            this.tail.xRot = 0.2F;
+        }""", "Модель барыса (снежного барса) с длинным пушистым хвостом.")
+
 if __name__ == "__main__" and os.environ.get("PREVIEW"):
     import preview
     out = os.environ["PREVIEW"]
-    for m in (kok, tul, ber, arba, sam):
+    for m in (kok, tul, ber, arba, sam, sai, bar):
         for yaw in (35, 215):
             preview.render(m.preview_parts, os.path.join(TEX_DIR, m.name + ".png"),
                            os.path.join(out, "%s_%d.png" % (m.name, yaw)), yaw=yaw,

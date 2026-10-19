@@ -106,6 +106,16 @@ def crack():
         write(os.path.join(SND, "qamshy", f"crack{i}.ogg"), sw + cr + tail)
 
 
+def korkyt():
+    """Кюй Қорқыта: медленный, с долгими глиссандо и бурдоном (~10.5 с)."""
+    D3, E3, F3, G3, A3, C4, D4, A2 = 146.8, 164.8, 174.6, 196, 220, 261.6, 293.7, 110
+    notes = [(0.0, 1.6, A2 * 1.2, D3), (1.6, 0.8, D3, F3), (2.4, 1.4, F3, A3), (3.8, 0.6, A3, G3),
+             (4.4, 1.2, G3 * 1.03, F3), (5.6, 0.9, F3, D4 * 0.98), (6.5, 0.8, D4, C4), (7.3, 0.9, C4, A3),
+             (8.2, 2.1, A3 * 1.02, D3)]
+    write(os.path.join(SND, "kobyz", "korkyt.ogg"), kobyz_phrase(notes, 99, 10.6))
+
+
 if __name__ == "__main__":
     kobyz()
     crack()
+    korkyt()

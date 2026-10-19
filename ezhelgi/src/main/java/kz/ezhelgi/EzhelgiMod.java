@@ -68,6 +68,7 @@ public final class EzhelgiMod {
         CREATIVE_TABS.register(modBusGroup);
         ModMenus.MENUS.register(modBusGroup);
         Accessories.init();
+        kz.ezhelgi.event.ModEvents.init();
 
         EntityAttributeCreationEvent.BUS.addListener(EzhelgiMod::registerAttributes);
         SpawnPlacementRegisterEvent.BUS.addListener(EzhelgiMod::registerSpawnPlacements);
@@ -92,6 +93,17 @@ public final class EzhelgiMod {
         event.put(ModEntities.ALBASTY.get(), Albasty.createAttributes().build());
         event.put(ModEntities.ZHALMAUYZ_KEMPIR.get(), ZhalmauyzKempir.createAttributes().build());
         event.put(ModEntities.SAMURYK.get(), Samuryk.createAttributes().build());
+        event.put(ModEntities.BALBAL.get(), kz.ezhelgi.entity.Balbal.createAttributes().build());
+        event.put(ModEntities.BAQSY_KOLENKESI.get(), kz.ezhelgi.entity.BaqsyKolenkesi.createAttributes().build());
+        event.put(ModEntities.DAU.get(), kz.ezhelgi.entity.Dau.createAttributes().build());
+        event.put(ModEntities.SAIGA.get(), kz.ezhelgi.entity.Saiga.createAttributes().build());
+        event.put(ModEntities.BARYS.get(), kz.ezhelgi.entity.Barys.createAttributes().build());
+        event.put(ModEntities.KORKYT_ATA.get(), kz.ezhelgi.entity.KorkytAta.createAttributes().build());
+        event.put(ModEntities.QARAQSHY.get(), kz.ezhelgi.entity.Qaraqshy.createAttributes().build());
+        event.put(ModEntities.AUYLDAS.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.ABAI.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.SHOQAN.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.AL_FARABI.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
     }
 
     private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
@@ -114,6 +126,20 @@ public final class EzhelgiMod {
         event.register(ModEntities.ALBASTY.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Albasty::checkSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.ZHALMAUYZ_KEMPIR.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.BALBAL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.Balbal::checkSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.BAQSY_KOLENKESI.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.DAU.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.SAIGA.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.BARYS.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.Barys::checkBarysSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.KORKYT_ATA.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.KorkytAta::checkSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.QARAQSHY.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.SAMURYK.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Animal::checkAnimalSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);

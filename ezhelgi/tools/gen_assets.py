@@ -2040,6 +2040,8 @@ if __name__ == "__main__":
     v4_data()
     import v5_assets
     v5_assets.run(sys.modules[__name__])
+    import v6_assets
+    v6_assets.run(sys.modules[__name__])
     unlock_recipes()
     lang()
     print("assets done")

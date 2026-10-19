@@ -32,7 +32,7 @@ public final class ModEntities {
     /** Бүркіт — беркут, ловчая птица. */
     public static final RegistryObject<EntityType<Berkut>> BERKUT = ENTITY_TYPES.register("berkut",
             () -> EntityType.Builder.of(Berkut::new, MobCategory.CREATURE)
-                    .sized(0.6f, 0.9f)
+                    .sized(0.8f, 1.15f)
                     .clientTrackingRange(8)
                     .build(ENTITY_TYPES.key("berkut")));
 
@@ -106,4 +106,73 @@ public final class ModEntities {
                     .passengerAttachments(new Vec3(0.0, 1.55, 0.1))
                     .clientTrackingRange(12)
                     .build(ENTITY_TYPES.key("samuryk")));
+
+    // ---------- v6 ----------
+    public static final RegistryObject<EntityType<Balbal>> BALBAL = ENTITY_TYPES.register("balbal",
+            () -> EntityType.Builder.<Balbal>of(Balbal::new, MobCategory.MONSTER)
+                    .sized(0.7f, 2.1f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("balbal")));
+
+    public static final RegistryObject<EntityType<BaqsyKolenkesi>> BAQSY_KOLENKESI = ENTITY_TYPES.register("baqsy_kolenkesi",
+            () -> EntityType.Builder.<BaqsyKolenkesi>of(BaqsyKolenkesi::new, MobCategory.MONSTER)
+                    .sized(0.6f, 1.95f)
+                    .fireImmune()
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("baqsy_kolenkesi")));
+
+    public static final RegistryObject<EntityType<Dau>> DAU = ENTITY_TYPES.register("dau",
+            () -> EntityType.Builder.<Dau>of(Dau::new, MobCategory.MONSTER)
+                    .sized(1.4f, 4.4f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("dau")));
+
+    public static final RegistryObject<EntityType<Saiga>> SAIGA = ENTITY_TYPES.register("aqboken",
+            () -> EntityType.Builder.<Saiga>of(Saiga::new, MobCategory.CREATURE)
+                    .sized(0.8f, 1.1f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("aqboken")));
+
+    public static final RegistryObject<EntityType<Barys>> BARYS = ENTITY_TYPES.register("barys",
+            () -> EntityType.Builder.<Barys>of(Barys::new, MobCategory.CREATURE)
+                    .sized(0.8f, 0.85f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("barys")));
+
+    public static final RegistryObject<EntityType<KorkytAta>> KORKYT_ATA = ENTITY_TYPES.register("qorqyt_ata",
+            () -> EntityType.Builder.<KorkytAta>of(KorkytAta::new, MobCategory.CREATURE)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("qorqyt_ata")));
+
+    public static final RegistryObject<EntityType<Qaraqshy>> QARAQSHY = ENTITY_TYPES.register("qaraqshy",
+            () -> EntityType.Builder.<Qaraqshy>of(Qaraqshy::new, MobCategory.MONSTER)
+                    .sized(0.6f, 1.95f)
+                    .attach(EntityAttachment.VEHICLE, RIDER_SEAT)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("qaraqshy")));
+
+    public static final RegistryObject<EntityType<SteppeVillager>> AUYLDAS = ENTITY_TYPES.register("auyldas",
+            () -> EntityType.Builder.<SteppeVillager>of(SteppeVillager::new, MobCategory.CREATURE)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("auyldas")));
+
+    public static final RegistryObject<EntityType<SteppeVillager>> ABAI = ENTITY_TYPES.register("abai",
+            () -> EntityType.Builder.<SteppeVillager>of(SteppeVillager::new, MobCategory.CREATURE)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("abai")));
+
+    public static final RegistryObject<EntityType<SteppeVillager>> SHOQAN = ENTITY_TYPES.register("shoqan",
+            () -> EntityType.Builder.<SteppeVillager>of(SteppeVillager::new, MobCategory.CREATURE)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("shoqan")));
+
+    public static final RegistryObject<EntityType<SteppeVillager>> AL_FARABI = ENTITY_TYPES.register("al_farabi",
+            () -> EntityType.Builder.<SteppeVillager>of(SteppeVillager::new, MobCategory.CREATURE)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("al_farabi")));
 }

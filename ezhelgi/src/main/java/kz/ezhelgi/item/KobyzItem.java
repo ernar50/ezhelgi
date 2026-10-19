@@ -58,7 +58,7 @@ public class KobyzItem extends Item {
     }
 
     public static boolean isEvil(LivingEntity e) {
-        return e.is(EntityTypeTags.UNDEAD) || e instanceof Albasty || e instanceof Zheztyrnak || e instanceof BatyrAruagy;
+        return e.is(EntityTypeTags.UNDEAD) || e instanceof Albasty || e instanceof Zheztyrnak || e instanceof BatyrAruagy || e instanceof kz.ezhelgi.entity.BaqsyKolenkesi;
     }
 
     private static void playPhrase(ServerLevel level, LivingEntity player) {
@@ -70,6 +70,10 @@ public class KobyzItem extends Item {
             double a = i * Math.PI * 2.0 / 24.0;
             level.sendParticles(ParticleTypes.SOUL, player.getX() + Math.cos(a) * 2.5, player.getY() + 0.3,
                     player.getZ() + Math.sin(a) * 2.5, 1, 0.0, 0.0, 0.0, 0.02);
+        }
+        // кобыз медленно изнашивается
+        if (!(player instanceof Player p && p.getAbilities().instabuild) && player.isUsingItem()) {
+            player.getItemInHand(player.getUsedItemHand()).hurtAndBreak(1, player, player.getUsedItemHand());
         }
     }
 

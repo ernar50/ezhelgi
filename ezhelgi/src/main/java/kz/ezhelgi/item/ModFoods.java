@@ -57,4 +57,16 @@ public final class ModFoods {
             .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.RESISTANCE, 1200, 0), 1.0f))
             .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 1200, 0), 1.0f))
             .build();
+
+    // Жылқы еті — конина (сырая и жареная)
+    public static final FoodProperties JYLQY_ETI = new FoodProperties.Builder()
+            .nutrition(3).saturationModifier(0.3f).build();
+    public static final FoodProperties PISKEN_JYLQY_ETI = new FoodProperties.Builder()
+            .nutrition(8).saturationModifier(0.9f).build();
+    // Ақбөкен еті — мясо сайгака
+    public static final FoodProperties AQBOKEN_ETI = new FoodProperties.Builder()
+            .nutrition(2).saturationModifier(0.3f).build();
+    public static final FoodProperties PISKEN_AQBOKEN_ETI = new FoodProperties.Builder()
+            .nutrition(7).saturationModifier(0.8f).build();
+    public static final Consumable MEAT_EAT = Consumables.defaultFood().build();
 }

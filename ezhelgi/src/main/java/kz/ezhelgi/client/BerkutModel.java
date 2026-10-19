@@ -10,7 +10,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 
 /**
- * Модель Бүркіта (беркут).
+ * Модель Бүркіта (беркут): золотистый затылок, белое основание хвоста.
  * Сгенерировано tools/gen_models.py вместе с текстурой.
  */
 @SuppressWarnings("unused")
@@ -37,13 +37,13 @@ public class BerkutModel extends EntityModel<EzhelgiRenderState> {
     public static LayerDefinition createBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
-        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-2.5F, -3F, -3F, 5F, 6F, 7F), PartPose.offset(0F, 19F, 0F));
-        PartDefinition p_head = root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(24, 0).addBox(-2F, -4F, -2.5F, 4F, 4F, 4F).texOffs(40, 0).addBox(-1F, -2.5F, -4.5F, 2F, 2F, 2F), PartPose.offset(0F, 16F, -2.5F));
-        PartDefinition p_wing_l = root.addOrReplaceChild("wing_l", CubeListBuilder.create().texOffs(0, 13).addBox(0F, 0F, 0F, 1F, 7F, 9F), PartPose.offset(2.5F, 16.5F, -2F));
-        PartDefinition p_wing_r = root.addOrReplaceChild("wing_r", CubeListBuilder.create().texOffs(20, 13).addBox(-1F, 0F, 0F, 1F, 7F, 9F), PartPose.offset(-2.5F, 16.5F, -2F));
-        PartDefinition p_tail = root.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(40, 13).addBox(-2F, 0F, 0F, 4F, 1F, 5F), PartPose.offsetAndRotation(0F, 21F, 4F, -0.4F, 0F, 0F));
-        PartDefinition p_leg_l = root.addOrReplaceChild("leg_l", CubeListBuilder.create().texOffs(58, 13).addBox(-0.5F, 0F, -0.5F, 1F, 2F, 1F), PartPose.offset(1.2F, 22F, 0.5F));
-        PartDefinition p_leg_r = root.addOrReplaceChild("leg_r", CubeListBuilder.create().texOffs(0, 29).addBox(-0.5F, 0F, -0.5F, 1F, 2F, 1F), PartPose.offset(-1.2F, 22F, 0.5F));
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-3F, -3.5F, -3.5F, 6F, 7F, 8F).texOffs(28, 0).addBox(-2.5F, -2.5F, -4.5F, 5F, 5F, 1.5F), PartPose.offsetAndRotation(0F, 18F, 0F, -0.25F, 0F, 0F));
+        PartDefinition p_head = root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(42, 0).addBox(-2F, -4F, -3F, 4F, 4F, 4F).texOffs(0, 15).addBox(-1F, -3F, -4.5F, 2F, 1.5F, 1.5F).texOffs(8, 15).addBox(-0.75F, -2.5F, -5.5F, 1.5F, 2.5F, 1.2F), PartPose.offset(0F, 14.5F, -3F));
+        PartDefinition p_wing_l = root.addOrReplaceChild("wing_l", CubeListBuilder.create().texOffs(16, 15).addBox(0F, 0F, 0F, 1F, 7F, 9F).texOffs(36, 15).addBox(0F, 6F, 3F, 1F, 3F, 6F), PartPose.offset(3F, 15F, -2.5F));
+        PartDefinition p_wing_r = root.addOrReplaceChild("wing_r", CubeListBuilder.create().texOffs(0, 31).addBox(-1F, 0F, 0F, 1F, 7F, 9F).texOffs(20, 31).addBox(-1F, 6F, 3F, 1F, 3F, 6F), PartPose.offset(-3F, 15F, -2.5F));
+        PartDefinition p_tail = root.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(34, 31).addBox(-2.5F, 0F, 0F, 5F, 1F, 6F), PartPose.offsetAndRotation(0F, 20.5F, 4F, -0.35F, 0F, 0F));
+        PartDefinition p_leg_l = root.addOrReplaceChild("leg_l", CubeListBuilder.create().texOffs(56, 31).addBox(-1F, -0.5F, -1F, 2F, 2F, 2F).texOffs(0, 47).addBox(-0.5F, 1.5F, -0.5F, 1F, 1.5F, 1F).texOffs(4, 47).addBox(-1F, 2.5F, -1.5F, 2F, 0.5F, 2F), PartPose.offset(1.5F, 21F, 0.5F));
+        PartDefinition p_leg_r = root.addOrReplaceChild("leg_r", CubeListBuilder.create().texOffs(12, 47).addBox(-1F, -0.5F, -1F, 2F, 2F, 2F).texOffs(20, 47).addBox(-0.5F, 1.5F, -0.5F, 1F, 1.5F, 1F).texOffs(24, 47).addBox(-1F, 2.5F, -1.5F, 2F, 0.5F, 2F), PartPose.offset(-1.5F, 21F, 0.5F));
         return LayerDefinition.create(mesh, 64, 64);
     }
 
@@ -59,20 +59,23 @@ public class BerkutModel extends EntityModel<EzhelgiRenderState> {
         this.head.yRot = headYaw;
         this.head.xRot = headPitch;
         if (state.flying) {
-            float flap = Mth.sin(age * 0.9F) * 0.55F;
-            this.wing_l.zRot = -1.45F + flap;
-            this.wing_r.zRot = 1.45F - flap;
-            this.wing_l.xRot = 0.15F;
-            this.wing_r.xRot = 0.15F;
-            this.leg_l.xRot = 0.9F;
-            this.leg_r.xRot = 0.9F;
-            this.tail.xRot = -0.1F;
+            float flap = Mth.sin(age * 0.6F) * 0.55F;
+            this.wing_l.zRot = -1.5F + flap;
+            this.wing_r.zRot = 1.5F - flap;
+            this.wing_l.xRot = 0.1F;
+            this.wing_r.xRot = 0.1F;
+            this.leg_l.xRot = 1.0F;
+            this.leg_r.xRot = 1.0F;
+            this.tail.xRot = -0.05F;
+            this.body.xRot = 0.1F;
         } else {
             float step = Mth.cos(limbPos * 0.6662F) * 1.2F * limbSpeed;
             this.leg_l.xRot = step;
             this.leg_r.xRot = -step;
-            this.wing_l.zRot = -0.08F;
-            this.wing_r.zRot = 0.08F;
+            this.wing_l.zRot = -0.06F;
+            this.wing_r.zRot = 0.06F;
+            this.wing_l.xRot = 0.12F;
+            this.wing_r.xRot = 0.12F;
         }
     }
 }

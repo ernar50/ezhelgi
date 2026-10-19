@@ -28,6 +28,13 @@ public final class ModMaterials {
     public static final ToolMaterial SAKA_GOLD = new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL,
             1100, 8.0f, 3.0f, 22, SAKA_GOLD_REPAIRABLE);
 
+    public static final TagKey<Item> EZHELGI_TAS_REPAIRABLE = TagKey.create(Registries.ITEM,
+            Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "ezhelgi_tas_repairable"));
+
+    /** Ежелгі тас — камень балбала: прочнее железа, копает как алмаз не умеет, но быстро. */
+    public static final ToolMaterial EZHELGI_TAS = new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL,
+            900, 7.5f, 2.5f, 16, EZHELGI_TAS_REPAIRABLE);
+
     public static final ResourceKey<? extends Registry<EquipmentAsset>> EQUIPMENT_ROOT =
             ResourceKey.createRegistryKey(Identifier.withDefaultNamespace("equipment_asset"));
 

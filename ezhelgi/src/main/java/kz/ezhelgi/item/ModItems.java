@@ -78,7 +78,7 @@ public final class ModItems {
 
     // ---------- Быт ----------
     public static final RegistryObject<Item> DOMBYRA = item("dombyra",
-            p -> new DombyraItem(p.stacksTo(1)));
+            p -> new DombyraItem(p.durability(900)));
     public static final RegistryObject<Item> KIIZ_UY = item("kiiz_uy",
             p -> new KiizUyItem(p.stacksTo(16).rarity(Rarity.UNCOMMON), "yurt_small", 5));
     public static final RegistryObject<Item> ULKEN_KIIZ_UY = item("ulken_kiiz_uy",
@@ -131,7 +131,7 @@ public final class ModItems {
 
     // ---------- v5: сказочные существа, кобыз, қамшы, тұмар ----------
     public static final RegistryObject<Item> QOBYZ = item("qobyz",
-            p -> new KobyzItem(p.stacksTo(1).rarity(Rarity.UNCOMMON)));
+            p -> new KobyzItem(p.durability(900).rarity(Rarity.UNCOMMON)));
     public static final RegistryObject<Item> QAMSHY = item("qamshy",
             p -> new QamshyItem(p.sword(ToolMaterial.IRON, 0.0f, -1.6f)));
     public static final RegistryObject<Item> SYNYQ_QYLYSH = item("synyq_qylysh",
@@ -168,6 +168,58 @@ public final class ModItems {
             p -> new SpawnEggItem(p.spawnEgg(ModEntities.ZHALMAUYZ_KEMPIR.get()).rarity(Rarity.EPIC)));
     public static final RegistryObject<Item> SAMURYK_SPAWN_EGG = item("samuryk_spawn_egg",
             p -> new SpawnEggItem(p.spawnEgg(ModEntities.SAMURYK.get()).rarity(Rarity.RARE)));
+
+    // ---------- v6: еда, торсық, находки, инструменты из древнего камня ----------
+    public static final RegistryObject<Item> JYLQY_ETI = item("jylqy_eti",
+            p -> new Item(p.food(ModFoods.JYLQY_ETI, ModFoods.MEAT_EAT)));
+    public static final RegistryObject<Item> PISKEN_JYLQY_ETI = item("pisken_jylqy_eti",
+            p -> new Item(p.food(ModFoods.PISKEN_JYLQY_ETI, ModFoods.MEAT_EAT)));
+    public static final RegistryObject<Item> AQBOKEN_ETI = item("aqboken_eti",
+            p -> new Item(p.food(ModFoods.AQBOKEN_ETI, ModFoods.MEAT_EAT)));
+    public static final RegistryObject<Item> PISKEN_AQBOKEN_ETI = item("pisken_aqboken_eti",
+            p -> new Item(p.food(ModFoods.PISKEN_AQBOKEN_ETI, ModFoods.MEAT_EAT)));
+    public static final RegistryObject<Item> TORSYK = item("torsyk",
+            p -> new TorsykItem(p.stacksTo(1), null));
+    public static final RegistryObject<Item> TORSYK_QYMYZ = item("torsyk_qymyz",
+            p -> new TorsykItem(p.durability(TorsykItem.CAPACITY), TorsykItem.Drink.QYMYZ));
+    public static final RegistryObject<Item> TORSYK_SHUBAT = item("torsyk_shubat",
+            p -> new TorsykItem(p.durability(TorsykItem.CAPACITY), TorsykItem.Drink.SHUBAT));
+    /** Киелі қыл — мистическая струна бақсы. */
+    public static final RegistryObject<Item> KIELI_QYL = item("kieli_qyl",
+            p -> new Item(p.rarity(Rarity.RARE)));
+    /** Ежелгі тас — древний камень балбала. */
+    public static final RegistryObject<Item> EZHELGI_TAS = item("ezhelgi_tas",
+            p -> new Item(p.rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> TAS_KAILA = item("tas_kaila",
+            p -> new Item(p.pickaxe(ModMaterials.EZHELGI_TAS, 1.0f, -2.8f).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> TAS_BALTA = item("tas_balta",
+            p -> new Item(p.axe(ModMaterials.EZHELGI_TAS, 6.0f, -3.1f).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> TAS_KUREK = item("tas_kurek",
+            p -> new Item(p.shovel(ModMaterials.EZHELGI_TAS, 1.5f, -3.0f).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> DAU_SHOQPARY = item("dau_shoqpary",
+            p -> new Item(p.sword(ToolMaterial.IRON, 8.0f, -3.4f).rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> OTYRAR_TENGESI = item("otyrar_tengesi",
+            p -> new Item(p.rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> QOLJAZBA = item("qoljazba",
+            p -> new Item(p.stacksTo(16).rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> QUMYRA = item("qumyra",
+            p -> new Item(p.stacksTo(16).rarity(Rarity.UNCOMMON)));
+
+    public static final RegistryObject<Item> BALBAL_SPAWN_EGG = egg("balbal", () -> ModEntities.BALBAL.get());
+    public static final RegistryObject<Item> BAQSY_SPAWN_EGG = egg("baqsy_kolenkesi", () -> ModEntities.BAQSY_KOLENKESI.get());
+    public static final RegistryObject<Item> DAU_SPAWN_EGG = egg("dau", () -> ModEntities.DAU.get());
+    public static final RegistryObject<Item> SAIGA_SPAWN_EGG = egg("aqboken", () -> ModEntities.SAIGA.get());
+    public static final RegistryObject<Item> BARYS_SPAWN_EGG = egg("barys", () -> ModEntities.BARYS.get());
+    public static final RegistryObject<Item> KORKYT_SPAWN_EGG = egg("qorqyt_ata", () -> ModEntities.KORKYT_ATA.get());
+    public static final RegistryObject<Item> QARAQSHY_SPAWN_EGG = egg("qaraqshy", () -> ModEntities.QARAQSHY.get());
+    public static final RegistryObject<Item> AUYLDAS_SPAWN_EGG = egg("auyldas", () -> ModEntities.AUYLDAS.get());
+    public static final RegistryObject<Item> ABAI_SPAWN_EGG = egg("abai", () -> ModEntities.ABAI.get());
+    public static final RegistryObject<Item> SHOQAN_SPAWN_EGG = egg("shoqan", () -> ModEntities.SHOQAN.get());
+    public static final RegistryObject<Item> AL_FARABI_SPAWN_EGG = egg("al_farabi", () -> ModEntities.AL_FARABI.get());
+
+    private static RegistryObject<Item> egg(String name, Supplier<? extends net.minecraft.world.entity.EntityType<?>> type) {
+        return item(name + "_spawn_egg", p -> new SpawnEggItem(p.spawnEgg(type.get())));
+    }
 
     // ---------- Золотые украшения в зверином стиле (аксессуары) ----------
     public static final RegistryObject<Item> BARYS_ALQASY = accessory("barys_alqasy",

@@ -85,6 +85,24 @@ STYLES = {
                 rib="minecraft:dark_oak_planks", rib_stairs="minecraft:dark_oak_stairs", roof_ring=e("baskur"),
                 crown=e("shanyrak"), door="minecraft:dark_oak_door", floor="minecraft:dark_oak_planks",
                 carpets=[e("ornek"), e("ornek"), e("syrmak"), e("kok_syrmak"), e("alasha")]),
+    # көк үй — голубая юрта с белым орнаментом
+    "kok": dict(wall="minecraft:light_blue_wool", wall_low=e("aq_oiu"), pole=e("kerege"), band=e("baskur"),
+                roof=e("kiiz"), roof_stairs=e("kiiz_stairs"), eave=e("kiiz_slab"),
+                rib="minecraft:birch_planks", rib_stairs="minecraft:birch_stairs", roof_ring=None,
+                crown=e("shanyrak"), door="minecraft:birch_door", floor="minecraft:birch_planks",
+                carpets=[e("kok_syrmak"), e("kok_syrmak"), e("alasha"), e("syrmak"), e("tekemet")]),
+    # қызыл үй — нарядная юрта с красными стенами
+    "qyzyl": dict(wall="minecraft:red_wool", wall_low=e("aq_oiu"), pole=None, band=e("baskur"),
+                  roof=e("kiiz"), roof_stairs=e("kiiz_stairs"), eave=e("kiiz_slab"),
+                  rib="minecraft:dark_oak_planks", rib_stairs="minecraft:dark_oak_stairs", roof_ring=e("baskur"),
+                  crown=e("shanyrak"), door="minecraft:dark_oak_door", floor="minecraft:spruce_planks",
+                  carpets=[e("ornek"), e("syrmak"), e("syrmak"), e("alasha"), e("ornek")]),
+    # қара үй — тёмная юрта из старого войлока
+    "qara": dict(wall="minecraft:gray_wool", wall_low=e("qonyr_kiiz"), pole=e("kerege"), band=e("qonyr_oiu"),
+                 roof=e("qonyr_kiiz"), roof_stairs=e("qonyr_kiiz_stairs"), eave=e("kiiz_slab"),
+                 rib="minecraft:spruce_planks", rib_stairs="minecraft:spruce_stairs", roof_ring=None,
+                 crown=e("shanyrak"), door="minecraft:spruce_door", floor="minecraft:spruce_planks",
+                 carpets=[e("tekemet"), e("tekemet"), e("alasha"), e("tekemet"), e("tekemet")]),
     # қос — маленькая походная коричневая юрта
     "qos": dict(wall=e("qonyr_kiiz"), wall_low=e("qonyr_kiiz"), pole=e("kerege"), band=e("qonyr_oiu"),
                 roof=e("qonyr_kiiz"), roof_stairs=e("qonyr_kiiz_stairs"), eave=None,
@@ -217,6 +235,25 @@ def build_yurt(R, wall_h, slope, path_len, seed, style="aq", loot=e("chests/yurt
             if inside(bx, c) and not is_wall(bx, c) and abs(bx - c) >= 2:
                 t.put(bx, 1, c, "minecraft:barrel", {"facing": "up", "open": "false"})
                 t.put(bx, 2, c, "minecraft:lantern", LANTERN)
+        # кровати вдоль стен, верстак и печь у задней стены
+        BED = {"aq": "minecraft:white_bed", "qonyr": "minecraft:brown_bed", "otau": "minecraft:red_bed",
+               "han": "minecraft:red_bed", "qos": "minecraft:brown_bed", "kok": "minecraft:light_blue_bed",
+               "qyzyl": "minecraft:red_bed", "qara": "minecraft:gray_bed"}.get(style, "minecraft:red_bed")
+        if R >= 3.4:
+            sides = [(-1, "west")] if R < 5 else [(-1, "west"), (1, "east")]
+            for side, facing in sides:
+                hx = c + side * int(R - 1.5)
+                fx = hx - side
+                for bz in (c + 2,) if R < 6 else (c + 2, c - 2):
+                    if all(inside(x, bz) and not is_wall(x, bz) for x in (hx, fx)):
+                        t.put(hx, 1, bz, BED, {"facing": facing, "occupied": "false", "part": "head"})
+                        t.put(fx, 1, bz, BED, {"facing": facing, "occupied": "false", "part": "foot"})
+            for dx, block, props in ((-2, "minecraft:crafting_table", None),
+                                     (2, "minecraft:smoker", {"facing": "south", "lit": "false"})):
+                bx = c + dx
+                bz = min(z for z in range(N) if inside(bx, z) and not is_wall(bx, z))
+                if abs(dx) < R - 1:
+                    t.put(bx, 1, bz, block, props)
         if style == "han":
             # тақ — трон хана у задней стены и сундуки по бокам
             t.put(c, 1, back_z + 1, "minecraft:dark_oak_stairs", {"facing": "north", "half": "bottom", "shape": "straight", "waterlogged": "false"})
@@ -249,7 +286,19 @@ def horse_nbt(rng, kind="minecraft:horse"):
     return nbt
 
 
-def pen(t, x0, z0, w, d, rng, horses=3, tulpar=False):
+def sheep_nbt(rng):
+    color = rng.choice([0, 0, 0, 0, 12, 15, 8])
+    return {"id": (8, "minecraft:sheep"), "PersistenceRequired": (1, 1), "Color": (1, color)}
+
+
+def villager_nbt(rng, notable=False):
+    nbt = {"id": (8, e("auyldas")), "PersistenceRequired": (1, 1), "Variant": (3, rng.randrange(20))}
+    if notable:
+        nbt["MaybeNotable"] = (1, 1)
+    return nbt
+
+
+def pen(t, x0, z0, w, d, rng, horses=3, tulpar=False, sheep=0, camels=0):
     """Загон с лошадьми: забор из еловых столбов и сено."""
     for x in range(x0, x0 + w):
         for z in range(z0, z0 + d):
@@ -276,6 +325,18 @@ def pen(t, x0, z0, w, d, rng, horses=3, tulpar=False):
         t.entity(hx + 0.5, 1, min(hz, z0 + d - 2) + 0.5, horse_nbt(rng))
     if tulpar:
         t.entity(x0 + w - 2.5, 1, z0 + d - 2.5, {"id": (8, e("tulpar")), "PersistenceRequired": (1, 1)})
+    for i in range(sheep):
+        t.entity(x0 + 1.5 + (i * 3) % max(1, w - 2), 1, z0 + 1.5 + (i % 2) * 2, sheep_nbt(rng))
+    for i in range(camels):
+        t.entity(x0 + w - 2.5, 1, z0 + 2.5 + i * 2, {"id": (8, "minecraft:camel"), "PersistenceRequired": (1, 1)})
+
+
+def people(t, cx, cz, radius, rng, n, notables=0):
+    """Жители аула вокруг площади."""
+    for i in range(n):
+        a = i * 2 * math.pi / n + rng.uniform(-0.3, 0.3)
+        r = radius * rng.uniform(0.4, 0.8)
+        t.entity(cx + math.cos(a) * r + 0.5, 1, cz + math.sin(a) * r + 0.5, villager_nbt(rng, i < notables))
 
 
 def plaza(t, cx, cz, radius, rng):
@@ -315,6 +376,12 @@ def yurt(kind, seed):
         return build_yurt(9.5, 5, 0.7, 4, seed, "han")
     if kind == "qos":
         return build_yurt(3.5, 3, 0.55, 0, seed, "qos")
+    if kind == "kok":
+        return build_yurt(5.0, 3, 0.8, 2, seed, "kok")
+    if kind == "qyzyl":
+        return build_yurt(5.5, 4, 0.8, 2, seed, "qyzyl")
+    if kind == "qara":
+        return build_yurt(4.0, 3, 0.75, 1, seed, "qara")
     raise ValueError(kind)
 
 
@@ -329,6 +396,8 @@ def build_aul_small():
     place_yurt(t, yurt("qos", 3), 40, mid + 2, "west")
     place_yurt(t, yurt("otau", 4), mid, 40, "north")
     pen(t, 32, 33, 7, 6, rng, horses=2)
+    pen(t, 8, 33, 7, 6, rng, horses=0, sheep=4)
+    people(t, mid, mid + 2, 9.5, rng, 3)
     return t
 
 
@@ -343,7 +412,10 @@ def build_aul_medium():
     place_yurt(t, yurt("aq_small", 4), 16, 52, "north")
     place_yurt(t, yurt("qos", 5), 32, 54, "north")
     place_yurt(t, yurt("qonyr_small", 6), 48, 52, "north")
-    pen(t, 44, 6, 10, 8, rng, horses=4)
+    place_yurt(t, yurt("kok", 7), 53, 13, "west")
+    pen(t, 4, 4, 10, 8, rng, horses=4)
+    pen(t, 4, 40, 9, 7, rng, horses=0, sheep=5)
+    people(t, mid, mid, 11.5, rng, 5, notables=1)
     return t
 
 
@@ -365,8 +437,12 @@ def build_aul_large():
     place_yurt(t, yurt("qonyr_small", 8), 62, 74, "north")
     place_yurt(t, yurt("qos", 9), 8, 76, "east")
     place_yurt(t, yurt("qos", 10), 80, 76, "west")
+    place_yurt(t, yurt("kok", 12), 26, 38, "east")
+    place_yurt(t, yurt("qara", 13), 64, 38, "west")
     pen(t, 30, 54, 10, 8, rng, horses=4)
-    pen(t, 50, 54, 10, 8, rng, horses=3, tulpar=True)
+    pen(t, 50, 54, 10, 8, rng, horses=3, tulpar=True, camels=1)
+    pen(t, 4, 4, 11, 8, rng, horses=0, sheep=6)
+    people(t, mid, mid + 4, 13.5, rng, 8, notables=2)
     return t
 
 

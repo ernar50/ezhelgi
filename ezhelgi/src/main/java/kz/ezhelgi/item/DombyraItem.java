@@ -6,6 +6,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -16,7 +18,8 @@ import net.minecraft.world.level.Level;
 /**
  * Домбыра: зажми ПКМ — батыр держит домбыру двумя руками и играет кюй.
  * Каждые 3 секунды звучит новая музыкальная фраза (записи синтезированы
- * как щипок двух струн, строй ре–соль). Только музыка, без эффектов.
+ * как щипок двух струн, строй ре–соль). Музыка понемногу лечит игроков рядом,
+ * а сама домбыра медленно изнашивается.
  */
 public class DombyraItem extends Item {
     private static final int PHRASE_TICKS = 62;
@@ -47,6 +50,14 @@ public class DombyraItem extends Item {
                 ModSounds.DOMBYRA_KUI.get(), SoundSource.RECORDS, 1.0f, 1.0f);
         level.sendParticles(ParticleTypes.NOTE, player.getX(), player.getEyeY() + 0.5, player.getZ(),
                 4, 0.6, 0.3, 0.6, 1.0);
+        // музыка лечит игроков рядом
+        for (Player near : level.getEntitiesOfClass(Player.class, player.getBoundingBox().inflate(8.0))) {
+            near.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0, true, true));
+        }
+        // инструмент понемногу изнашивается
+        if (!(player instanceof Player p && p.getAbilities().instabuild)) {
+            player.getItemInHand(player.getUsedItemHand()).hurtAndBreak(1, player, player.getUsedItemHand());
+        }
     }
 
     @Override

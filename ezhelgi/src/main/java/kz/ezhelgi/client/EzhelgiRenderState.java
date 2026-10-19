@@ -8,4 +8,5 @@ public class EzhelgiRenderState extends LivingEntityRenderState {
     public boolean flying;
     public boolean saddled;
     public float wheel;
+    public boolean male;
 }

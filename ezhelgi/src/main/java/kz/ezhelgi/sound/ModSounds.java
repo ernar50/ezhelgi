@@ -62,6 +62,25 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> SAMURYK_AMBIENT = sound("entity.samuryk.ambient");
     public static final RegistryObject<SoundEvent> SAMURYK_HURT = sound("entity.samuryk.hurt");
     public static final RegistryObject<SoundEvent> SAMURYK_DEATH = sound("entity.samuryk.death");
+    // v6
+    public static final RegistryObject<SoundEvent> BALBAL_AWAKE = sound("entity.balbal.awake");
+    public static final RegistryObject<SoundEvent> BAQSY_WAVE = sound("entity.baqsy_kolenkesi.wave");
+    public static final RegistryObject<SoundEvent> BAQSY_AMBIENT = sound("entity.baqsy_kolenkesi.ambient");
+    public static final RegistryObject<SoundEvent> DAU_ROAR = sound("entity.dau.roar");
+    public static final RegistryObject<SoundEvent> DAU_SLAM = sound("entity.dau.slam");
+    public static final RegistryObject<SoundEvent> DAU_HIT = sound("entity.dau.hit");
+    public static final RegistryObject<SoundEvent> DAU_AMBIENT = sound("entity.dau.ambient");
+    public static final RegistryObject<SoundEvent> DAU_HURT = sound("entity.dau.hurt");
+    public static final RegistryObject<SoundEvent> DAU_DEATH = sound("entity.dau.death");
+    public static final RegistryObject<SoundEvent> SAIGA_AMBIENT = sound("entity.aqboken.ambient");
+    public static final RegistryObject<SoundEvent> SAIGA_HURT = sound("entity.aqboken.hurt");
+    public static final RegistryObject<SoundEvent> SAIGA_DEATH = sound("entity.aqboken.death");
+    public static final RegistryObject<SoundEvent> BARYS_AMBIENT = sound("entity.barys.ambient");
+    public static final RegistryObject<SoundEvent> BARYS_ANGRY = sound("entity.barys.angry");
+    public static final RegistryObject<SoundEvent> BARYS_HURT = sound("entity.barys.hurt");
+    public static final RegistryObject<SoundEvent> BARYS_DEATH = sound("entity.barys.death");
+    public static final RegistryObject<SoundEvent> KORKYT_KUI = sound("entity.qorqyt_ata.kui");
+    public static final RegistryObject<SoundEvent> KORKYT_VANISH = sound("entity.qorqyt_ata.vanish");
 
     private static RegistryObject<SoundEvent> sound(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(
