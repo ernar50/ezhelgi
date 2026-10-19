@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[66,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="ezhelgi"
+version="1.0.0"
+displayName="Ежелгі Қазақстан"
+authors="Ernar"
+description='''Древний Казахстан: оружие батыров и броня Золотого человека, бешбармак и кымыз,
+юрта и домбыра, беркут, кокбори и тулпар, курганы с сакским золотом в степи.'''
+
+[[dependencies.ezhelgi]]
+    modId="forge"
+    mandatory=true
+    versionRange="[66,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.ezhelgi]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[26.3,26.4)"
+    ordering="NONE"
+    side="BOTH"
