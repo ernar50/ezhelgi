@@ -497,22 +497,98 @@ def blocks():
 
 
 # ------------------------------------------------------------------ armor equipment textures
+ARMOR = {
+    "red": (156, 30, 28, 255), "red_d": (112, 20, 20, 255),
+    "gl": (255, 230, 128, 255), "g": (238, 184, 52, 255), "gd": (178, 120, 22, 255), "gk": (110, 70, 12, 255),
+    "turq": (40, 170, 160, 255), "sole": (70, 44, 24, 255),
+}
+
+
+def _armor_px(kind, x, y, w, h, rng):
+    """Pattern of one face pixel of the Golden Man armor."""
+    A = ARMOR
+    if kind == "gold":
+        base = A["g"] if (x * 2 + y) % 7 else A["gl"]
+        if x == 0 or y == 0:
+            base = A["gl"]
+        if x == w - 1 or y == h - 1:
+            base = A["gd"]
+        return base
+    if kind == "band":  # золотой пояс/обод с бирюзовыми вставками
+        if y == 0:
+            return A["gl"]
+        if y == h - 1:
+            return A["gd"]
+        if x % 3 == 1 and y == 1:
+            return A["turq"]
+        return A["g"]
+    if kind == "plaques":  # красный кафтан, нашитые золотые треугольные бляшки
+        tx, ty = (x + (y // 4) * 2) % 4, y % 4
+        if ty == 1 and tx in (0, 1, 2):
+            return A["gl"] if tx == 1 else A["g"]
+        if ty == 2 and tx == 1:
+            return A["gd"]
+        return A["red"] if (x * 3 + y) % 9 else A["red_d"]
+    if kind == "sole":
+        return A["sole"]
+    return None
+
+
+def _armor_rect(c, x0, y0, w, h, kind, rows=None):
+    rng = random.Random(x0 * 131 + y0)
+    for y in range(h):
+        if rows is not None and y not in rows:
+            continue
+        for x in range(w):
+            col = _armor_px(kind(y) if callable(kind) else kind, x, y, w, h, rng)
+            if col:
+                k = 1 + rng.uniform(-0.05, 0.05)
+                c.set(x0 + x, y0 + y, (min(255, int(col[0] * k)), min(255, int(col[1] * k)), min(255, int(col[2] * k)), 255))
+
+
+def _box(c, u, v, w, h, d, side_kind, top_kind=None, bottom_kind=None, front_kind=None, rows=None):
+    """Paint every face of a box-UV region like the game does (u, v = texture offset)."""
+    if top_kind:
+        _armor_rect(c, u + d, v, w, d, top_kind)
+    if bottom_kind:
+        _armor_rect(c, u + d + w, v, w, d, bottom_kind)
+    _armor_rect(c, u, v + d, d, h, side_kind, rows)                     # right
+    _armor_rect(c, u + d, v + d, w, h, front_kind or side_kind, rows)   # front
+    _armor_rect(c, u + d + w, v + d, d, h, side_kind, rows)             # left
+    _armor_rect(c, u + 2 * d + w, v + d, w, h, side_kind, rows)         # back
+
+
 def armor_layers():
-    for layer in ("humanoid", "humanoid_leggings"):
-        c = Canvas(64, 32, seed=31 if layer == "humanoid" else 32)
-        for y in range(32):
-            for x in range(64):
-                base = (242, 194, 48) if (x + y) % 7 else (210, 150, 30)
-                if y % 8 == 0:
-                    base = (192, 57, 43)
-                c.set(x, y, base + (255,))
-        c.noise(0.1)
-        # плашки-«чешуйки» как на костюме Золотого человека
-        for y in range(2, 32, 4):
-            for x in range((y // 4) % 2 * 2, 64, 4):
-                c.set(x, y, (255, 240, 160, 255))
-        path = "entity/equipment/%s/altyn_adam" % layer
-        c.save(path)
+    # --- humanoid: шлем, кафтан с рукавами, сапоги
+    c = Canvas(64, 32, seed=31)
+    # шлем: золотой обод сверху, красная шапка с бляшками, открытое лицо
+    head_kind = lambda y: "band" if y <= 2 else ("gold" if y == 7 else "plaques")
+    _box(c, 0, 0, 8, 8, 8, head_kind, top_kind="gold")
+    # лицо: убираем середину передней грани (видно лицо игрока)
+    for y in range(4, 8):
+        for x in range(1, 7):
+            c.set(8 + x, 8 + y, (0, 0, 0, 0))
+    for x in range(8):
+        c.set(8 + x, 8 + 3, ARMOR["gd"] if x in (0, 7) else (ARMOR["gl"] if x % 2 else ARMOR["g"]))
+    # кафтан: воротник, бляшки, золотой пояс
+    body_kind = lambda y: "gold" if y == 0 else ("band" if y in (8, 9, 10) else "plaques")
+    _box(c, 16, 16, 8, 12, 4, body_kind, top_kind="gold", bottom_kind="plaques")
+    for y in range(1, 8):  # золотая застёжка по центру
+        c.set(20 + 3, 20 + y, ARMOR["gl"]); c.set(20 + 4, 20 + y, ARMOR["gd"])
+    # рукава: золотые наплечники и манжеты
+    arm_kind = lambda y: "gold" if y in (0, 1, 10, 11) else "plaques"
+    _box(c, 40, 16, 4, 12, 4, arm_kind, top_kind="gold", bottom_kind="plaques")
+    # сапоги: только нижние 5 рядов ноги
+    boot_kind = lambda y: "band" if y == 7 else "plaques"
+    _box(c, 0, 16, 4, 12, 4, boot_kind, bottom_kind="sole", rows=range(7, 12))
+    c.save("entity/equipment/humanoid/altyn_adam")
+
+    # --- humanoid_leggings: штаны и пояс
+    c = Canvas(64, 32, seed=32)
+    _box(c, 16, 16, 8, 12, 4, lambda y: "band" if y in (8, 9, 10) else "plaques", rows=range(7, 12))
+    leg_kind = lambda y: "band" if y == 0 else "plaques"
+    _box(c, 0, 16, 4, 12, 4, leg_kind, top_kind="plaques", rows=range(0, 9))
+    c.save("entity/equipment/humanoid_leggings/altyn_adam")
 
 
 # ------------------------------------------------------------------ models & item definitions
@@ -668,11 +744,11 @@ def tags():
 def spawns():
     mod = f"{D}/forge/biome_modifier"
     write_json(f"{mod}/add_kokbori.json", {"type": "forge:add_spawns", "biomes": f"#{NS}:steppe",
-                                          "spawners": {"type": f"{NS}:kokbori", "weight": 6, "minCount": 2, "maxCount": 4}})
+                                          "spawners": [{"type": f"{NS}:kokbori", "count": {"type": "minecraft:uniform", "min_inclusive": 2, "max_inclusive": 4}, "weight": 6}]})
     write_json(f"{mod}/add_tulpar.json", {"type": "forge:add_spawns", "biomes": f"#{NS}:steppe",
-                                         "spawners": {"type": f"{NS}:tulpar", "weight": 3, "minCount": 1, "maxCount": 3}})
+                                         "spawners": [{"type": f"{NS}:tulpar", "count": {"type": "minecraft:uniform", "min_inclusive": 1, "max_inclusive": 3}, "weight": 3}]})
     write_json(f"{mod}/add_berkut.json", {"type": "forge:add_spawns", "biomes": f"#{NS}:berkut_habitat",
-                                         "spawners": {"type": f"{NS}:berkut", "weight": 4, "minCount": 1, "maxCount": 2}})
+                                         "spawners": [{"type": f"{NS}:berkut", "count": {"type": "minecraft:uniform", "min_inclusive": 1, "max_inclusive": 2}, "weight": 4}]})
 
 
 # ------------------------------------------------------------------ kurgan structure
@@ -859,6 +935,273 @@ NAMES = {
 }
 
 
+# ------------------------------------------------------------------ yurts, carpets and the aul
+def write_template(path, tpl, data_version=3955):
+    palette, pindex, block_list = [], {}, []
+    for (x, y, z), (name, props, nbt) in sorted(tpl.blocks.items()):
+        key = (name, tuple(sorted(props.items())))
+        if key not in pindex:
+            entry = {"Name": (8, name)}
+            if props:
+                entry["Properties"] = (10, {k: (8, v) for k, v in props.items()})
+            pindex[key] = len(palette)
+            palette.append(entry)
+        e = {"state": (3, pindex[key]), "pos": (9, (3, [x, y, z]))}
+        if nbt:
+            e["nbt"] = (10, nbt)
+        block_list.append(e)
+    root = {
+        "DataVersion": (3, data_version),
+        "size": (9, (3, list(tpl.size))),
+        "palette": (9, (10, palette)),
+        "blocks": (9, (10, block_list)),
+        "entities": (9, (10, [])),
+    }
+    raw = b"\x0a" + struct.pack(">H", 0) + nbt_payload(10, root)
+    full = f"{D}/structure/{path}.nbt"
+    os.makedirs(os.path.dirname(full), exist_ok=True)
+    with gzip.GzipFile(full, "wb", mtime=0) as fh:
+        fh.write(raw)
+
+
+CARPET_MOTIF = [
+    "........",
+    ".11..11.",
+    "1..11..1",
+    "1.1..1.1",
+    ".1....1.",
+    "...11...",
+    "...11...",
+    "........",
+]
+
+
+def motif_carpet(name, bg, c1, c2, seed):
+    c = Canvas(seed=seed)
+    c.rect(0, 0, 15, 15, bg)
+    c.noise(0.05)
+    for cy in (0, 8):
+        for cx in (0, 8):
+            col = c1 if (cx + cy) % 16 == 0 else c2
+            for y, row in enumerate(CARPET_MOTIF):
+                for x, ch in enumerate(row):
+                    if ch == "1":
+                        c.set(cx + x, cy + y, col)
+    c.save("block/" + name)
+
+
+def yurt_textures():
+    # Киіз: чистый белый войлок
+    c = Canvas(seed=41)
+    c.rect(0, 0, 15, 15, "#f1eee5")
+    c.noise(0.035)
+    rng = random.Random(41)
+    for _ in range(14):
+        x, y = rng.randint(0, 15), rng.randint(0, 15)
+        c.set(x, y, "#e2ddd0")
+    c.save("block/kiiz")
+
+    # Басқұр: белый войлок с красной лентой и золотым зигзагом
+    c = Canvas(seed=42)
+    c.rect(0, 0, 15, 15, "#f1eee5")
+    c.noise(0.03)
+    c.rect(0, 4, 15, 11, "#a3201c")
+    c.line(0, 4, 15, 4, "#d9a521"); c.line(0, 11, 15, 11, "#d9a521")
+    for x in range(16):
+        y = 6 + (x % 4 if x % 8 < 4 else 3 - x % 4)
+        c.set(x, y, "#f0c040")
+        c.set(x, 13 - y + 4, "#2c4a8c") if 5 <= 13 - y + 4 <= 10 else None
+    c.save("block/baskur")
+
+    motif_carpet("syrmak", "#a3201c", "#f0dcaa", "#e8b23a", 43)
+    motif_carpet("kok_syrmak", "#1f4e8c", "#f4f1e8", "#e8b23a", 44)
+
+    # Текемет: бежевый войлок с коричневыми завитками и рамкой
+    c = Canvas(seed=45)
+    c.rect(0, 0, 15, 15, "#d6c193")
+    c.noise(0.06)
+    for i in range(16):
+        c.set(i, 0, "#6b3f1f"); c.set(i, 15, "#6b3f1f"); c.set(0, i, "#6b3f1f"); c.set(15, i, "#6b3f1f")
+    for y, row in enumerate(CARPET_MOTIF):
+        for x, ch in enumerate(row):
+            if ch == "1":
+                c.set(4 + x, 4 + y, "#7a4a24")
+    c.save("block/tekemet")
+
+    # Алаша: тканые полосы
+    c = Canvas(seed=46)
+    stripes = ["#b4251f", "#b4251f", "#e8b23a", "#2e7d3a", "#2e7d3a", "#f1eee5", "#1f4e8c", "#1f4e8c"]
+    for y in range(16):
+        c.line(0, y, 15, y, stripes[y % 8])
+    for x in range(16):
+        c.set(x, 5 if x % 2 else 4, "#f1eee5")
+        c.set(x, 13 if x % 2 else 12, "#e8b23a")
+    c.noise(0.05)
+    c.save("block/alasha")
+
+    # Өрнек: чёрный с золотой сеткой ромбов
+    c = Canvas(seed=47)
+    c.rect(0, 0, 15, 15, "#1d1a1a")
+    c.noise(0.04)
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 8 == 0 or (x - y) % 8 == 0:
+                c.set(x, y, "#e2a92a")
+            if (x % 8 == 4 and y % 8 == 4):
+                c.set(x, y, "#b4251f")
+    c.save("block/ornek")
+
+    # иконка большой юрты
+    pal = {"o": "#3a2412", "w": "#f6f1e4", "W": "#ffffff", "g": "#e8b23a", "R": "#b4251f", "h": "#8b5a2b", "d": "#6b3f1f"}
+    art = [
+        "................",
+        ".......hh.......",
+        "......oggo......",
+        ".....owgwwo.....",
+        "....owwgwwwo....",
+        "...owwwgwwwwo...",
+        "..owwwwgwwwwwo..",
+        ".oRRRRRRRRRRRRo.",
+        ".ogggggggggggggo",
+        ".owwhwwwwwwhwwo.",
+        ".owwhwwddwwhwwo.",
+        ".owwhwwdgdwhwwo.",
+        ".owwhwwddwwhwwo.",
+        ".oRRRRRddRRRRRo.",
+        ".oooooooooooooo.",
+        "................",
+    ]
+    from_art([r[:16].ljust(16, ".") for r in art], pal).save("item/ulken_kiiz_uy")
+
+
+def yurt_models():
+    blk = lambda n: f"{NS}:block/{n}"
+    for b in ["baskur"]:
+        write_json(f"{A}/blockstates/{b}.json", {"variants": {"": {"model": blk(b)}}})
+        write_json(f"{A}/models/block/{b}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": blk(b)}})
+        write_json(f"{A}/items/{b}.json", {"model": {"type": "minecraft:model", "model": blk(b)}})
+    for b in ["kok_syrmak", "tekemet", "alasha", "ornek"]:
+        write_json(f"{A}/blockstates/{b}.json", {"variants": {"": {"model": blk(b)}}})
+        write_json(f"{A}/models/block/{b}.json", {"parent": "minecraft:block/carpet", "textures": {"wool": blk(b)}})
+        write_json(f"{A}/items/{b}.json", {"model": {"type": "minecraft:model", "model": blk(b)}})
+    tex = {"bottom": blk("kiiz"), "top": blk("kiiz"), "side": blk("kiiz")}
+    write_json(f"{A}/models/block/kiiz_stairs.json", {"parent": "minecraft:block/stairs", "textures": tex})
+    write_json(f"{A}/models/block/kiiz_stairs_inner.json", {"parent": "minecraft:block/inner_stairs", "textures": tex})
+    write_json(f"{A}/models/block/kiiz_stairs_outer.json", {"parent": "minecraft:block/outer_stairs", "textures": tex})
+    write_json(f"{A}/models/block/kiiz_slab.json", {"parent": "minecraft:block/slab", "textures": tex})
+    write_json(f"{A}/models/block/kiiz_slab_top.json", {"parent": "minecraft:block/slab_top", "textures": tex})
+    base = {"east": 0, "south": 90, "west": 180, "north": 270}
+    variants = {}
+    for facing, y0 in base.items():
+        for half in ("bottom", "top"):
+            for shape in ("straight", "inner_left", "inner_right", "outer_left", "outer_right"):
+                model = blk("kiiz_stairs" + ("_inner" if shape.startswith("inner") else "_outer" if shape.startswith("outer") else ""))
+                y = y0
+                if half == "bottom" and shape.endswith("left"):
+                    y = y0 - 90
+                if half == "top" and shape.endswith("right"):
+                    y = y0 + 90
+                v = {"model": model}
+                y %= 360
+                if half == "top":
+                    v["x"] = 180
+                if y:
+                    v["y"] = y
+                if half == "top" or y:
+                    v["uvlock"] = True
+                variants[f"facing={facing},half={half},shape={shape}"] = v
+    write_json(f"{A}/blockstates/kiiz_stairs.json", {"variants": variants})
+    write_json(f"{A}/blockstates/kiiz_slab.json", {"variants": {
+        "type=bottom": {"model": blk("kiiz_slab")},
+        "type=top": {"model": blk("kiiz_slab_top")},
+        "type=double": {"model": blk("kiiz")}}})
+    write_json(f"{A}/items/kiiz_stairs.json", {"model": {"type": "minecraft:model", "model": blk("kiiz_stairs")}})
+    write_json(f"{A}/items/kiiz_slab.json", {"model": {"type": "minecraft:model", "model": blk("kiiz_slab")}})
+    write_json(f"{A}/models/item/ulken_kiiz_uy.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{NS}:item/ulken_kiiz_uy"}})
+    write_json(f"{A}/items/ulken_kiiz_uy.json", {"model": {"type": "minecraft:model", "model": f"{NS}:item/ulken_kiiz_uy"}})
+
+
+def yurt_data():
+    e = lambda n: f"{NS}:{n}"
+    for b in ["baskur", "kiiz_stairs", "kiiz_slab", "kok_syrmak", "tekemet", "alasha", "ornek"]:
+        write_json(f"{D}/loot_table/blocks/{b}.json", {
+            "type": "minecraft:block",
+            "pools": [{"condition": {"type": "minecraft:survives_explosion"},
+                       "entries": [{"type": "minecraft:item", "name": e(b)}], "rolls": 1}],
+            "random_sequence": f"{NS}:blocks/{b}"})
+    shaped("kiiz_stairs", ["K  ", "KK ", "KKK"], {"K": e("kiiz")}, e("kiiz_stairs"), 4, "building")
+    shaped("kiiz_slab", ["KKK"], {"K": e("kiiz")}, e("kiiz_slab"), 6, "building")
+    shapeless("baskur", [e("kiiz"), e("kiiz"), "minecraft:red_dye", "minecraft:gold_nugget"], e("baskur"), 2, "building")
+    shaped("kok_syrmak", ["BW"], {"B": "minecraft:blue_wool", "W": "minecraft:white_wool"}, e("kok_syrmak"), 4, "building")
+    shaped("tekemet", ["NW"], {"N": "minecraft:brown_wool", "W": "minecraft:white_wool"}, e("tekemet"), 4, "building")
+    shapeless("alasha", ["minecraft:red_wool", "minecraft:yellow_wool", "minecraft:green_wool", "minecraft:blue_wool"], e("alasha"), 6, "building")
+    shapeless("ornek", ["minecraft:black_wool", "minecraft:black_wool", "minecraft:gold_nugget"], e("ornek"), 4, "building")
+    shaped("ulken_kiiz_uy", ["BSB", "KUK", "MMM"], {"B": e("baskur"), "S": e("shanyrak"), "K": e("kiiz_stairs"),
+                                                    "U": e("kiiz_uy"), "M": e("syrmak")}, e("ulken_kiiz_uy"))
+
+    def it(name, w, lo=1, hi=1):
+        x = {"type": "minecraft:item", "name": name, "weight": w}
+        if hi > 1:
+            x["modifier"] = [{"type": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": lo, "max": hi}}]
+        return x
+    write_json(f"{D}/loot_table/chests/yurt.json", {
+        "type": "minecraft:chest",
+        "pools": [{"rolls": {"type": "minecraft:uniform", "min": 3, "max": 6}, "entries": [
+            it(e("baursak"), 20, 2, 8), it(e("kurt"), 18, 2, 6), it(e("kazy"), 12, 1, 3), it(e("kumys"), 12, 1, 3),
+            it(e("shubat"), 8, 1, 2), it(e("beshbarmak"), 6), it("minecraft:wheat", 10, 2, 6),
+            it(e("syrmak"), 6, 1, 3), it(e("alasha"), 6, 1, 3), it("minecraft:saddle", 4), it(e("dombyra"), 3),
+            it(e("saka_gold"), 2), it("minecraft:gold_ingot", 4, 1, 2)]}],
+        "random_sequence": f"{NS}:chests/yurt"})
+    write_json(f"{MC}/tags/block/stairs.json", {"values": [e("kiiz_stairs")]})
+    write_json(f"{MC}/tags/block/slabs.json", {"values": [e("kiiz_slab")]})
+    write_json(f"{MC}/tags/item/stairs.json", {"values": [e("kiiz_stairs")]})
+    write_json(f"{MC}/tags/item/slabs.json", {"values": [e("kiiz_slab")]})
+    # тұлпар: место для седла и конской брони
+    write_json(f"{MC}/tags/entity_type/can_equip_saddle.json", {"values": [e("tulpar")]})
+    write_json(f"{MC}/tags/entity_type/can_wear_horse_armor.json", {"values": [e("tulpar")]})
+
+    # шаблоны юрт и аула
+    import yurts
+    write_template("yurt/yurt_small", yurts.build_yurt(4.0, 3, 0.8, 2, seed=2))
+    write_template("yurt/yurt_big", yurts.build_yurt(6.5, 4, 0.75, 3, seed=1))
+    write_template("aul", yurts.build_aul())
+    write_json(f"{D}/worldgen/template_pool/aul/start.json", {
+        "fallback": "minecraft:empty",
+        "elements": [{"weight": 1, "element": {
+            "element_type": "minecraft:single_pool_element", "location": f"{NS}:aul",
+            "processors": "minecraft:empty", "projection": "rigid"}}]})
+    write_json(f"{D}/worldgen/structure/aul.json", {
+        "type": "minecraft:jigsaw",
+        "biomes": f"#{NS}:steppe",
+        "step": "surface_structures",
+        "spawn_overrides": {},
+        "terrain_adaptation": "beard_box",
+        "start_pool": f"{NS}:aul/start",
+        "size": 1,
+        "start_height": {"absolute": -1},
+        "project_start_to_heightmap": "WORLD_SURFACE_WG",
+        "max_distance_from_center": 80,
+        "use_expansion_hack": False})
+    write_json(f"{D}/worldgen/structure_set/aul.json", {
+        "structures": [{"structure": f"{NS}:aul", "weight": 1}],
+        "placement": {"type": "minecraft:random_spread", "spacing": 34, "separation": 12, "salt": 772031}})
+
+
+NAMES.update({
+    "item.ezhelgi.ulken_kiiz_uy": ("Большая юрта (набор)", "Үлкен киіз үй", "Big Yurt Kit"),
+    "block.ezhelgi.kiiz_stairs": ("Войлочные ступени", "Киіз баспалдақ", "Kiiz Stairs"),
+    "block.ezhelgi.kiiz_slab": ("Войлочная плита", "Киіз тақта", "Kiiz Slab"),
+    "block.ezhelgi.baskur": ("Баскур (узорная лента)", "Басқұр", "Baskur Band"),
+    "block.ezhelgi.kok_syrmak": ("Синий сырмак", "Көк сырмақ", "Blue Syrmak"),
+    "block.ezhelgi.tekemet": ("Текемет", "Текемет", "Tekemet Felt Rug"),
+    "block.ezhelgi.alasha": ("Алаша (полосатый ковёр)", "Алаша", "Alasha Rug"),
+    "block.ezhelgi.ornek": ("Орнек (узорный ковёр)", "Өрнек", "Ornek Rug"),
+    "message.ezhelgi.kiiz_uy.no_room": ("Здесь мало места для юрты: нужна свободная ровная площадка.",
+                                        "Киіз үйге орын жетпейді: бос тегіс алаң керек.",
+                                        "Not enough room for a yurt: needs a clear flat area."),
+})
+
+
 def lang():
     for i, code in enumerate(["ru_ru", "kk_kz", "en_us"]):
         write_json(f"{A}/lang/{code}.json", {k: v[i] for k, v in NAMES.items()})
@@ -874,5 +1217,8 @@ if __name__ == "__main__":
     tags()
     spawns()
     kurgan()
+    yurt_textures()
+    yurt_models()
+    yurt_data()
     lang()
     print("assets done")

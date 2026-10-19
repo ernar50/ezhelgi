@@ -1,9 +1,12 @@
 package kz.ezhelgi.item;
 
-import kz.ezhelgi.block.ModBlocks;
+import kz.ezhelgi.EzhelgiMod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -11,117 +14,99 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+
+import java.util.Optional;
 
 /**
- * Киіз үй (набор юрты): ПКМ по земле ставит готовую юрту.
- * Кереге (стены), киіз (войлочная крыша), шаңырақ (купол),
- * сырмақ (ковры) и очаг в центре. Вход смотрит туда, откуда подошёл игрок.
+ * Набор юрты: ПКМ по земле ставит готовую юрту из шаблона
+ * (data/ezhelgi/structure/yurt/*.nbt). Дверь смотрит на игрока.
+ * Центр юрты — там, куда кликнули.
  */
 public class KiizUyItem extends Item {
-    private static final double WALL_RADIUS = 4.5;
+    private final String template;
+    private final int radius;
 
-    public KiizUyItem(Properties properties) {
+    public KiizUyItem(Properties properties, String template, int radius) {
         super(properties);
+        this.template = template;
+        this.radius = radius;
     }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
-        BlockPos center = context.getClickedPos().above();
+        BlockPos ground = context.getClickedPos();
 
-        if (level.isClientSide()) {
+        if (!(level instanceof ServerLevel server)) {
             return InteractionResult.SUCCESS;
         }
 
-        if (!hasRoom(level, center)) {
+        Optional<StructureTemplate> found = server.getServer().getStructureTemplateManager()
+                .get(Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "yurt/" + this.template));
+        if (found.isEmpty()) {
+            EzhelgiMod.LOGGER.error("Yurt template {} not found", this.template);
+            return InteractionResult.FAIL;
+        }
+
+        if (!hasRoom(level, ground)) {
             if (player != null) {
                 player.sendSystemMessage(Component.translatable("message.ezhelgi.kiiz_uy.no_room"));
             }
             return InteractionResult.FAIL;
         }
 
-        // Дверь на стороне, где стоит игрок
-        Direction door = context.getHorizontalDirection().getOpposite();
-        build(level, center, door);
+        StructureTemplate yurt = found.get();
+        Vec3i size = yurt.getSize();
+        int c = size.getX() / 2;
 
-        level.playSound(null, center, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 1.0f, 0.8f);
+        // Шаблон построен дверью на юг (+Z); поворачиваем дверью к игроку
+        Direction door = context.getHorizontalDirection().getOpposite();
+        Rotation rotation = switch (door) {
+            case WEST -> Rotation.CLOCKWISE_90;
+            case NORTH -> Rotation.CLOCKWISE_180;
+            case EAST -> Rotation.COUNTERCLOCKWISE_90;
+            default -> Rotation.NONE;
+        };
+        int rx;
+        int rz;
+        switch (rotation) {
+            case CLOCKWISE_90 -> { rx = -c; rz = c; }
+            case CLOCKWISE_180 -> { rx = -c; rz = -c; }
+            case COUNTERCLOCKWISE_90 -> { rx = c; rz = -c; }
+            default -> { rx = c; rz = c; }
+        }
+        BlockPos origin = ground.offset(-rx, 0, -rz);
+
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+                .setRotation(rotation)
+                .setIgnoreEntities(true);
+        yurt.placeInWorld(server, origin, origin, settings, server.getRandom(), 2);
+
+        level.playSound(null, ground, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 1.0f, 0.8f);
         if (player != null && !player.getAbilities().instabuild) {
             context.getItemInHand().shrink(1);
         }
         return InteractionResult.SUCCESS;
     }
 
-    private static boolean hasRoom(Level level, BlockPos center) {
+    /** Над площадкой должно быть почти пусто: трава и цветы не мешают. */
+    private boolean hasRoom(Level level, BlockPos ground) {
         int blocked = 0;
-        for (int dx = -4; dx <= 4; dx++) {
-            for (int dz = -4; dz <= 4; dz++) {
-                if (dx * dx + dz * dz > WALL_RADIUS * WALL_RADIUS) continue;
-                for (int dy = 0; dy <= 5; dy++) {
-                    if (!level.getBlockState(center.offset(dx, dy, dz)).canBeReplaced()) {
+        int r = this.radius;
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                if (dx * dx + dz * dz > r * r) continue;
+                for (int dy = 1; dy <= r; dy++) {
+                    if (!level.getBlockState(ground.offset(dx, dy, dz)).canBeReplaced()) {
                         blocked++;
                     }
                 }
             }
         }
-        // Немного травы, цветов или снега не мешают, а вот стены и деревья — мешают
-        return blocked <= 6;
-    }
-
-    private static void build(Level level, BlockPos center, Direction door) {
-        BlockState kerege = ModBlocks.KEREGE.get().defaultBlockState();
-        BlockState kiiz = ModBlocks.KIIZ.get().defaultBlockState();
-        BlockState shanyrak = ModBlocks.SHANYRAK.get().defaultBlockState();
-        BlockState syrmak = ModBlocks.SYRMAK.get().defaultBlockState();
-        BlockState air = Blocks.AIR.defaultBlockState();
-
-        for (int dx = -4; dx <= 4; dx++) {
-            for (int dz = -4; dz <= 4; dz++) {
-                double r = Math.sqrt(dx * dx + dz * dz);
-                if (r > WALL_RADIUS) continue;
-
-                boolean isDoor = isDoorColumn(dx, dz, door);
-
-                // Пол: сырмақ внутри
-                if (r <= 3.5) {
-                    put(level, center.offset(dx, 0, dz), (dx == 0 && dz == 0) ? Blocks.CAMPFIRE.defaultBlockState() : syrmak);
-                    for (int dy = 1; dy <= 3; dy++) put(level, center.offset(dx, dy, dz), air);
-                }
-
-                // Стены: кереге в три яруса, проём для двери
-                if (r > 3.5) {
-                    for (int dy = 0; dy <= 2; dy++) {
-                        boolean opening = isDoor && dy <= 1;
-                        put(level, center.offset(dx, dy, dz), opening ? air : kerege);
-                    }
-                }
-
-                // Крыша: войлочный купол
-                if (r > 2.5) {
-                    put(level, center.offset(dx, 3, dz), kiiz);
-                } else if (r > 1.2) {
-                    put(level, center.offset(dx, 4, dz), kiiz);
-                    put(level, center.offset(dx, 3, dz), air);
-                } else {
-                    put(level, center.offset(dx, 3, dz), air);
-                    put(level, center.offset(dx, 4, dz), air);
-                    put(level, center.offset(dx, 5, dz), kiiz);
-                }
-            }
-        }
-        // Шаңырақ на вершине, как символ дома
-        put(level, center.offset(0, 5, 0), shanyrak);
-    }
-
-    private static boolean isDoorColumn(int dx, int dz, Direction door) {
-        int along = dx * door.getStepX() + dz * door.getStepZ();
-        int side = Math.abs(dx * door.getStepZ() - dz * door.getStepX());
-        return along >= 3 && side == 0;
-    }
-
-    private static void put(Level level, BlockPos pos, BlockState state) {
-        level.setBlock(pos, state, 3);
+        return blocked <= r * 3;
     }
 }

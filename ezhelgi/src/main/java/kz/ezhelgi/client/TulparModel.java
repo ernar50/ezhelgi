@@ -10,7 +10,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 
 /**
- * Модель Тұлпара (крылатый конь).
+ * Модель Тұлпара (крылатый конь) с седлом.
  * Сгенерировано tools/gen_models.py вместе с текстурой.
  */
 @SuppressWarnings("unused")
@@ -25,6 +25,7 @@ public class TulparModel extends EntityModel<EzhelgiRenderState> {
     private final ModelPart leg_br;
     private final ModelPart wing_l;
     private final ModelPart wing_r;
+    private final ModelPart saddle;
 
     public TulparModel(ModelPart root) {
         super(root);
@@ -38,6 +39,7 @@ public class TulparModel extends EntityModel<EzhelgiRenderState> {
         this.leg_br = root.getChild("leg_br");
         this.wing_l = root.getChild("wing_l");
         this.wing_r = root.getChild("wing_r");
+        this.saddle = root.getChild("saddle");
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -45,14 +47,15 @@ public class TulparModel extends EntityModel<EzhelgiRenderState> {
         PartDefinition root = mesh.getRoot();
         PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-5F, -5F, -11F, 10F, 10F, 22F), PartPose.offset(0F, 8F, 0F));
         PartDefinition p_neck = root.addOrReplaceChild("neck", CubeListBuilder.create().texOffs(64, 0).addBox(-2F, -11F, -3F, 4F, 12F, 6F).texOffs(84, 0).addBox(-1F, -12F, 3F, 2F, 13F, 2F), PartPose.offsetAndRotation(0F, 5F, -9F, 0.55F, 0F, 0F));
-        PartDefinition p_head = p_neck.addOrReplaceChild("head", CubeListBuilder.create().texOffs(92, 0).addBox(-3F, -4F, -7F, 6F, 5F, 8F).texOffs(0, 32).addBox(-2.5F, -3F, -11F, 5F, 4F, 4F).texOffs(18, 32).addBox(-2.5F, -6F, -1F, 1F, 2F, 1F).texOffs(22, 32).addBox(1.5F, -6F, -1F, 1F, 2F, 1F), PartPose.offset(0F, -10F, 0F));
-        PartDefinition p_tail = root.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(26, 32).addBox(-1.5F, 0F, -1.5F, 3F, 13F, 3F), PartPose.offsetAndRotation(0F, 4F, 11F, 0.5F, 0F, 0F));
-        PartDefinition p_leg_fl = root.addOrReplaceChild("leg_fl", CubeListBuilder.create().texOffs(38, 32).addBox(-2F, 0F, -2F, 4F, 9F, 4F).texOffs(54, 32).addBox(-2.5F, 9F, -2.5F, 5F, 2F, 5F), PartPose.offset(-3F, 13F, -8F));
-        PartDefinition p_leg_fr = root.addOrReplaceChild("leg_fr", CubeListBuilder.create().texOffs(74, 32).addBox(-2F, 0F, -2F, 4F, 9F, 4F).texOffs(90, 32).addBox(-2.5F, 9F, -2.5F, 5F, 2F, 5F), PartPose.offset(3F, 13F, -8F));
-        PartDefinition p_leg_bl = root.addOrReplaceChild("leg_bl", CubeListBuilder.create().texOffs(110, 32).addBox(-2F, 0F, -2F, 4F, 9F, 4F).texOffs(0, 48).addBox(-2.5F, 9F, -2.5F, 5F, 2F, 5F), PartPose.offset(-3F, 13F, 8F));
-        PartDefinition p_leg_br = root.addOrReplaceChild("leg_br", CubeListBuilder.create().texOffs(20, 48).addBox(-2F, 0F, -2F, 4F, 9F, 4F).texOffs(36, 48).addBox(-2.5F, 9F, -2.5F, 5F, 2F, 5F), PartPose.offset(3F, 13F, 8F));
-        PartDefinition p_wing_l = root.addOrReplaceChild("wing_l", CubeListBuilder.create().texOffs(56, 48).addBox(0F, -1F, 0F, 16F, 1F, 12F), PartPose.offset(5F, 4F, -6F));
+        PartDefinition p_head = p_neck.addOrReplaceChild("head", CubeListBuilder.create().texOffs(92, 0).addBox(-3F, -4F, -7F, 6F, 5F, 8F).texOffs(0, 32).addBox(-2.5F, -3F, -11F, 5F, 4F, 4F).texOffs(18, 32).addBox(-2.5F, -6F, -1F, 1F, 2F, 1F).texOffs(22, 32).addBox(1.5F, -6F, -1F, 1F, 2F, 1F).texOffs(26, 32).addBox(-1F, -5F, -4F, 2F, 1F, 4F), PartPose.offset(0F, -10F, 0F));
+        PartDefinition p_tail = root.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(38, 32).addBox(-1.5F, 0F, -1.5F, 3F, 13F, 3F), PartPose.offsetAndRotation(0F, 4F, 11F, 0.5F, 0F, 0F));
+        PartDefinition p_leg_fl = root.addOrReplaceChild("leg_fl", CubeListBuilder.create().texOffs(50, 32).addBox(-2F, 0F, -2F, 4F, 9F, 4F).texOffs(66, 32).addBox(-2.5F, 9F, -2.5F, 5F, 2F, 5F), PartPose.offset(-3F, 13F, -8F));
+        PartDefinition p_leg_fr = root.addOrReplaceChild("leg_fr", CubeListBuilder.create().texOffs(86, 32).addBox(-2F, 0F, -2F, 4F, 9F, 4F).texOffs(102, 32).addBox(-2.5F, 9F, -2.5F, 5F, 2F, 5F), PartPose.offset(3F, 13F, -8F));
+        PartDefinition p_leg_bl = root.addOrReplaceChild("leg_bl", CubeListBuilder.create().texOffs(0, 48).addBox(-2F, 0F, -2F, 4F, 9F, 4F).texOffs(16, 48).addBox(-2.5F, 9F, -2.5F, 5F, 2F, 5F), PartPose.offset(-3F, 13F, 8F));
+        PartDefinition p_leg_br = root.addOrReplaceChild("leg_br", CubeListBuilder.create().texOffs(36, 48).addBox(-2F, 0F, -2F, 4F, 9F, 4F).texOffs(52, 48).addBox(-2.5F, 9F, -2.5F, 5F, 2F, 5F), PartPose.offset(3F, 13F, 8F));
+        PartDefinition p_wing_l = root.addOrReplaceChild("wing_l", CubeListBuilder.create().texOffs(72, 48).addBox(0F, -1F, 0F, 16F, 1F, 12F), PartPose.offset(5F, 4F, -6F));
         PartDefinition p_wing_r = root.addOrReplaceChild("wing_r", CubeListBuilder.create().texOffs(0, 61).addBox(-16F, -1F, 0F, 16F, 1F, 12F), PartPose.offset(-5F, 4F, -6F));
+        PartDefinition p_saddle = root.addOrReplaceChild("saddle", CubeListBuilder.create().texOffs(56, 61).addBox(-5.5F, -6F, -5F, 11F, 1F, 10F).texOffs(98, 61).addBox(5F, -5F, -4F, 1F, 5F, 8F).texOffs(0, 74).addBox(-6F, -5F, -4F, 1F, 5F, 8F).texOffs(18, 74).addBox(-3F, -7F, -3F, 6F, 1F, 6F).texOffs(42, 74).addBox(-3F, -8F, 2F, 6F, 1F, 1F).texOffs(56, 74).addBox(-1F, -8F, -3F, 2F, 1F, 1F).texOffs(62, 74).addBox(6F, -1F, -1F, 1F, 3F, 1F).texOffs(66, 74).addBox(-7F, -1F, -1F, 1F, 3F, 1F), PartPose.offset(0F, 8F, 0F));
         return LayerDefinition.create(mesh, 128, 128);
     }
 
@@ -65,6 +68,7 @@ public class TulparModel extends EntityModel<EzhelgiRenderState> {
         float headYaw = Mth.clamp(state.yRot, -40.0F, 40.0F) * ((float) Math.PI / 180.0F);
         float headPitch = Mth.clamp(state.xRot, -30.0F, 40.0F) * ((float) Math.PI / 180.0F);
 
+        this.saddle.visible = state.saddled;
         this.neck.yRot = headYaw * 0.6F;
         this.neck.xRot += headPitch * 0.4F;
         float swing = Mth.cos(limbPos * 0.6662F) * 1.1F * limbSpeed;

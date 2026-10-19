@@ -6,4 +6,5 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 public class EzhelgiRenderState extends LivingEntityRenderState {
     public boolean sitting;
     public boolean flying;
+    public boolean saddled;
 }

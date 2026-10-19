@@ -66,12 +66,21 @@ public final class ModItems {
     public static final RegistryObject<Item> DOMBYRA = item("dombyra",
             p -> new DombyraItem(p.stacksTo(1)));
     public static final RegistryObject<Item> KIIZ_UY = item("kiiz_uy",
-            p -> new KiizUyItem(p.stacksTo(16).rarity(Rarity.UNCOMMON)));
+            p -> new KiizUyItem(p.stacksTo(16).rarity(Rarity.UNCOMMON), "yurt_small", 5));
+    public static final RegistryObject<Item> ULKEN_KIIZ_UY = item("ulken_kiiz_uy",
+            p -> new KiizUyItem(p.stacksTo(16).rarity(Rarity.RARE), "yurt_big", 7));
 
     public static final RegistryObject<Item> KIIZ = blockItem("kiiz", ModBlocks.KIIZ);
+    public static final RegistryObject<Item> KIIZ_STAIRS = blockItem("kiiz_stairs", ModBlocks.KIIZ_STAIRS);
+    public static final RegistryObject<Item> KIIZ_SLAB = blockItem("kiiz_slab", ModBlocks.KIIZ_SLAB);
+    public static final RegistryObject<Item> BASKUR = blockItem("baskur", ModBlocks.BASKUR);
     public static final RegistryObject<Item> KEREGE = blockItem("kerege", ModBlocks.KEREGE);
     public static final RegistryObject<Item> SHANYRAK = blockItem("shanyrak", ModBlocks.SHANYRAK);
     public static final RegistryObject<Item> SYRMAK = blockItem("syrmak", ModBlocks.SYRMAK);
+    public static final RegistryObject<Item> KOK_SYRMAK = blockItem("kok_syrmak", ModBlocks.KOK_SYRMAK);
+    public static final RegistryObject<Item> TEKEMET = blockItem("tekemet", ModBlocks.TEKEMET);
+    public static final RegistryObject<Item> ALASHA = blockItem("alasha", ModBlocks.ALASHA);
+    public static final RegistryObject<Item> ORNEK = blockItem("ornek", ModBlocks.ORNEK);
 
     // ---------- Яйца призыва ----------
     public static final RegistryObject<Item> KOKBORI_SPAWN_EGG = item("kokbori_spawn_egg",

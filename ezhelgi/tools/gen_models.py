@@ -56,8 +56,10 @@ class Model:
         rng = self.rng
         i = 0
         java_parts = []
+        self.preview_parts = []
         for name, parent, pivot, rot, cubes in self.parts:
             builder = "CubeListBuilder.create()"
+            pcubes = []
             for c in cubes:
                 cx, cy, cz, w, h, d, ck = c[:7]
                 extra = c[7] if len(c) > 7 else {}
@@ -66,6 +68,7 @@ class Model:
                 builder += ".texOffs(%d, %d).addBox(%s, %s, %s, %s, %s, %s)" % (
                     u, v, f(cx), f(cy), f(cz), f(w), f(h), f(d))
                 W, H, D = math.ceil(w), math.ceil(h), math.ceil(d)
+                pcubes.append((cx, cy, cz, w, h, d, u, v))
                 base = self.colors[ck]
                 faces = {
                     "top": (u + D, v, W, D, 1.12),
@@ -82,7 +85,13 @@ class Model:
                             if fname in ("front", "back", "left", "right") and fh > 2:
                                 grad = 1.06 - 0.14 * (yy / (fh - 1))
                             n = rng.uniform(-0.07, 0.07)
-                            col = tuple(max(0, min(255, int(ch * (shade * grad + n)))) for ch in base)
+                            src = base
+                            painter = extra.get("paint")
+                            if painter is not None:
+                                custom = painter(fname, xx, yy, fw, fh)
+                                if custom is not None:
+                                    src = self.colors[custom] if isinstance(custom, str) else custom
+                            col = tuple(max(0, min(255, int(ch * (shade * grad + n)))) for ch in src)
                             px[fx + xx, fy + yy] = col + (255,)
                 # details painted on the front face
                 fx, fy, fw, fh, _ = faces["front"]
@@ -108,6 +117,7 @@ class Model:
             else:
                 pose = "PartPose.offset(%s, %s, %s)" % (f(pivot[0]), f(pivot[1]), f(pivot[2]))
             java_parts.append((name, parent, builder, pose))
+            self.preview_parts.append((name, parent, pivot, rot, pcubes))
         os.makedirs(TEX_DIR, exist_ok=True)
         img.save(os.path.join(TEX_DIR, self.name.lower() + ".png"))
         return java_parts
@@ -212,22 +222,119 @@ kok.write_java("KokboriModel", """
 
 # ---------------------------------------------------------------- Тұлпар
 tul = Model("tulpar", 128, 128, {
-    "coat": (236, 228, 208), "mane": (214, 160, 52), "hoof": (72, 58, 46),
-    "wing": (250, 247, 236), "gold": (226, 178, 60), "eye": (30, 25, 25), "dark": (190, 180, 160),
+    "coat": (246, 242, 232), "dapple": (222, 216, 204), "belly": (252, 250, 244),
+    "mane": (232, 176, 48), "mane_dark": (186, 128, 26), "mane_light": (255, 214, 102),
+    "hoof": (214, 160, 40), "hoof_dark": (140, 96, 20),
+    "wing": (252, 250, 244), "wing2": (236, 230, 214), "gold": (238, 186, 56), "gold_dark": (196, 140, 30),
+    "eye": (24, 40, 70), "eye_white": (250, 250, 250), "muzzle": (196, 170, 160), "nostril": (90, 64, 60),
+    "leather": (120, 72, 36), "leather_dark": (84, 48, 22), "red": (172, 34, 30), "red_dark": (120, 20, 20),
 }, 22)
-tul.part("body", "root", (0, 8, 0), cubes=[(-5, -5, -11, 10, 10, 22, "coat")])
-tul.part("neck", "root", (0, 5, -9), (0.55, 0, 0), cubes=[(-2, -11, -3, 4, 12, 6, "coat"),
-                                                         (-1, -12, 3, 2, 13, 2, "mane")])
-tul.part("head", "neck", (0, -10, 0), cubes=[(-3, -4, -7, 6, 5, 8, "coat", {"front": [(0, 1, "eye"), (5, 1, "eye")]}),
-                                             (-2.5, -3, -11, 5, 4, 4, "dark"),
-                                             (-2.5, -6, -1, 1, 2, 1, "mane"),
-                                             (1.5, -6, -1, 1, 2, 1, "mane")])
-tul.part("tail", "root", (0, 4, 11), (0.5, 0, 0), cubes=[(-1.5, 0, -1.5, 3, 13, 3, "mane")])
+
+
+def coat_paint(face, x, y, w, h):
+    if face == "bottom":
+        return "belly"
+    if (x * 7 + y * 13) % 11 == 0 and face != "top":
+        return "dapple"
+    return None
+
+
+def mane_paint(face, x, y, w, h):
+    if x % 3 == 0:
+        return "mane_dark"
+    if x % 3 == 2 and y % 4 == 1:
+        return "mane_light"
+    return None
+
+
+def tail_paint(face, x, y, w, h):
+    return "mane_dark" if (x + y // 3) % 3 == 0 else ("mane_light" if y > h - 3 else None)
+
+
+def hoof_paint(face, x, y, w, h):
+    return "hoof_dark" if y == h - 1 else None
+
+
+def head_paint(face, x, y, w, h):
+    if face == "front":
+        # тұмар: золотой ромб на лбу
+        if abs(x - (w - 1) / 2) + abs(y - 1) <= 1.0:
+            return "gold"
+    if face in ("left", "right"):
+        if y == 1 and x in (w - 2, w - 3):
+            return "eye_white" if x == w - 3 else "eye"
+    return None
+
+
+def muzzle_paint(face, x, y, w, h):
+    if face == "front" and y == h - 2 and x in (1, w - 2):
+        return "nostril"
+    return "muzzle" if y >= h - 2 else None
+
+
+def wing_paint(face, x, y, w, h):
+    # x: размах крыла (16), y: глубина (12) на верхней/нижней грани
+    if face in ("top", "bottom"):
+        outer = x if face == "top" else w - 1 - x
+        if outer >= w - 3:
+            return "gold" if (y % 2 == 0) else "gold_dark"
+        if y >= h - 2 and (outer % 2 == 0):
+            return "wing2"
+        if outer % 3 == 0:
+            return "wing2"
+        return None
+    return "gold" if face in ("front", "back") and x >= w - 3 else None
+
+
+def wing_paint_mirror(face, x, y, w, h):
+    if face in ("top", "bottom"):
+        return wing_paint("bottom" if face == "top" else "top", x, y, w, h)
+    if face in ("front", "back") and x <= 2:
+        return "gold"
+    return None
+
+
+def blanket_paint(face, x, y, w, h):
+    if x == 0 or y == 0 or x == w - 1 or y == h - 1:
+        return "gold"
+    if (x + y) % 4 == 0:
+        return "gold_dark"
+    return None
+
+
+def flap_paint(face, x, y, w, h):
+    if y == h - 1 or x == 0 or x == w - 1:
+        return "gold"
+    if (x - y) % 3 == 0:
+        return "red_dark"
+    return None
+
+
+tul.part("body", "root", (0, 8, 0), cubes=[(-5, -5, -11, 10, 10, 22, "coat", {"paint": coat_paint})])
+tul.part("neck", "root", (0, 5, -9), (0.55, 0, 0), cubes=[(-2, -11, -3, 4, 12, 6, "coat", {"paint": coat_paint}),
+                                                         (-1, -12, 3, 2, 13, 2, "mane", {"paint": mane_paint})])
+tul.part("head", "neck", (0, -10, 0), cubes=[(-3, -4, -7, 6, 5, 8, "coat", {"paint": head_paint}),
+                                             (-2.5, -3, -11, 5, 4, 4, "coat", {"paint": muzzle_paint}),
+                                             (-2.5, -6, -1, 1, 2, 1, "coat"),
+                                             (1.5, -6, -1, 1, 2, 1, "coat"),
+                                             (-1, -5, -4, 2, 1, 4, "mane", {"paint": mane_paint})])
+tul.part("tail", "root", (0, 4, 11), (0.5, 0, 0), cubes=[(-1.5, 0, -1.5, 3, 13, 3, "mane", {"paint": tail_paint})])
 for leg, (x, z) in {"leg_fl": (-3, -8), "leg_fr": (3, -8), "leg_bl": (-3, 8), "leg_br": (3, 8)}.items():
-    tul.part(leg, "root", (x, 13, z), cubes=[(-2, 0, -2, 4, 9, 4, "coat"), (-2.5, 9, -2.5, 5, 2, 5, "hoof")])
-tul.part("wing_l", "root", (5, 4, -6), cubes=[(0, -1, 0, 16, 1, 12, "wing", {"tip": "gold"})])
-tul.part("wing_r", "root", (-5, 4, -6), cubes=[(-16, -1, 0, 16, 1, 12, "wing", {"tip": "gold"})])
+    tul.part(leg, "root", (x, 13, z), cubes=[(-2, 0, -2, 4, 9, 4, "coat", {"paint": coat_paint}),
+                                            (-2, 9, -2, 4, 2, 4, "hoof", {"paint": hoof_paint})])
+tul.part("wing_l", "root", (5, 4, -6), cubes=[(0, -1, 0, 16, 1, 12, "wing", {"paint": wing_paint})])
+tul.part("wing_r", "root", (-5, 4, -6), cubes=[(-16, -1, 0, 16, 1, 12, "wing", {"paint": wing_paint_mirror})])
+tul.part("saddle", "root", (0, 8, 0), cubes=[
+    (-5.5, -6, -5, 11, 1, 10, "red", {"paint": blanket_paint}),
+    (5, -5, -4, 1, 5, 8, "red", {"paint": flap_paint}),
+    (-6, -5, -4, 1, 5, 8, "red", {"paint": flap_paint}),
+    (-3, -7, -3, 6, 1, 6, "leather"),
+    (-3, -8, 2, 6, 1, 1, "leather_dark"),
+    (-1, -8, -3, 2, 1, 1, "gold"),
+    (6, -1, -1, 1, 3, 1, "gold"),
+    (-7, -1, -1, 1, 3, 1, "gold")])
 tul.write_java("TulparModel", """
+        this.saddle.visible = state.saddled;
         this.neck.yRot = headYaw * 0.6F;
         this.neck.xRot += headPitch * 0.4F;
         float swing = Mth.cos(limbPos * 0.6662F) * 1.1F * limbSpeed;
@@ -243,7 +350,7 @@ tul.write_java("TulparModel", """
             wing = -1.25F + Mth.sin(age * 0.08F) * 0.05F - limbSpeed * 0.25F;
         }
         this.wing_l.zRot = wing;
-        this.wing_r.zRot = -wing;""", "Модель Тұлпара (крылатый конь).")
+        this.wing_r.zRot = -wing;""", "Модель Тұлпара (крылатый конь) с седлом.")
 
 # ---------------------------------------------------------------- Бүркіт
 ber = Model("berkut", 64, 64, {
@@ -277,4 +384,12 @@ ber.write_java("BerkutModel", """
             this.wing_l.zRot = -0.08F;
             this.wing_r.zRot = 0.08F;
         }""", "Модель Бүркіта (беркут).")
+if __name__ == "__main__" and os.environ.get("PREVIEW"):
+    import preview
+    out = os.environ["PREVIEW"]
+    for m in (kok, tul, ber):
+        for yaw in (35, 215):
+            preview.render(m.preview_parts, os.path.join(TEX_DIR, m.name + ".png"),
+                           os.path.join(out, "%s_%d.png" % (m.name, yaw)), yaw=yaw,
+                           scale=12 if m.name != "tulpar" else 8)
 print("models done")

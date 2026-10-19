@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
 
@@ -32,6 +33,7 @@ public class EzhelgiMobRenderer<T extends Mob> extends MobRenderer<T, EzhelgiRen
         super.extractRenderState(entity, state, partialTicks);
         state.sitting = entity instanceof TamableAnimal tamable && tamable.isInSittingPose();
         state.flying = !entity.onGround() && !entity.isPassenger();
+        state.saddled = !entity.getItemBySlot(EquipmentSlot.SADDLE).isEmpty();
     }
 
     @Override
