@@ -531,6 +531,8 @@ def _armor_px(kind, x, y, w, h, rng):
         return A["red"] if (x * 3 + y) % 9 else A["red_d"]
     if kind == "sole":
         return A["sole"]
+    if kind == "skin":
+        return (176, 120, 82, 255) if (x + y) % 6 else (164, 110, 74, 255)
     return None
 
 
@@ -761,7 +763,11 @@ def nbt_payload(tag, value):
         out.write(b)
 
     def w(tag, v):
-        if tag == 3:
+        if tag == 1:
+            out.write(struct.pack(">b", v))
+        elif tag == 6:
+            out.write(struct.pack(">d", v))
+        elif tag == 3:
             out.write(struct.pack(">i", v))
         elif tag == 8:
             w_str(v)
@@ -955,7 +961,11 @@ def write_template(path, tpl, data_version=3955):
         "size": (9, (3, list(tpl.size))),
         "palette": (9, (10, palette)),
         "blocks": (9, (10, block_list)),
-        "entities": (9, (10, [])),
+        "entities": (9, (10, [
+            {"pos": (9, (6, [float(x), float(y), float(z)])),
+             "blockPos": (9, (3, [int(math.floor(x)), int(y), int(math.floor(z))])),
+             "nbt": (10, nbt)}
+            for (x, y, z, nbt) in getattr(tpl, "entities", [])])),
     }
     raw = b"\x0a" + struct.pack(">H", 0) + nbt_payload(10, root)
     full = f"{D}/structure/{path}.nbt"
@@ -1160,31 +1170,53 @@ def yurt_data():
     write_json(f"{MC}/tags/entity_type/can_equip_saddle.json", {"values": [e("tulpar")]})
     write_json(f"{MC}/tags/entity_type/can_wear_horse_armor.json", {"values": [e("tulpar")]})
 
-    # шаблоны юрт и аула
+    # шаблоны юрт, аулов, стоянок и кургана золотого воина
     import yurts
-    write_template("yurt/yurt_small", yurts.build_yurt(4.0, 3, 0.8, 2, seed=2))
-    write_template("yurt/yurt_big", yurts.build_yurt(6.5, 4, 0.75, 3, seed=1))
-    write_template("aul", yurts.build_aul())
-    write_json(f"{D}/worldgen/template_pool/aul/start.json", {
-        "fallback": "minecraft:empty",
-        "elements": [{"weight": 1, "element": {
-            "element_type": "minecraft:single_pool_element", "location": f"{NS}:aul",
-            "processors": "minecraft:empty", "projection": "rigid"}}]})
-    write_json(f"{D}/worldgen/structure/aul.json", {
-        "type": "minecraft:jigsaw",
-        "biomes": f"#{NS}:steppe",
-        "step": "surface_structures",
-        "spawn_overrides": {},
-        "terrain_adaptation": "beard_box",
-        "start_pool": f"{NS}:aul/start",
-        "size": 1,
-        "start_height": {"absolute": -1},
-        "project_start_to_heightmap": "WORLD_SURFACE_WG",
-        "max_distance_from_center": 80,
-        "use_expansion_hack": False})
-    write_json(f"{D}/worldgen/structure_set/aul.json", {
-        "structures": [{"structure": f"{NS}:aul", "weight": 1}],
-        "placement": {"type": "minecraft:random_spread", "spacing": 34, "separation": 12, "salt": 772031}})
+    write_template("yurt/yurt_small", yurts.yurt("aq_small", 2))
+    write_template("yurt/yurt_big", yurts.yurt("aq_big", 1))
+    write_template("yurt/yurt_qonyr", yurts.yurt("qonyr", 3))
+    write_template("yurt/yurt_otau", yurts.yurt("otau", 4))
+    write_template("yurt/yurt_han", yurts.yurt("han", 5))
+    write_template("aul/small", yurts.build_aul_small())
+    write_template("aul/medium", yurts.build_aul_medium())
+    write_template("aul/large", yurts.build_aul_large())
+    write_template("camp/camp_yurt", yurts.build_camp(0))
+    write_template("camp/camp_fire", yurts.build_camp(1))
+    write_template("altyn_qorym", yurts.build_burial())
+
+    def pool(name, elements):
+        write_json(f"{D}/worldgen/template_pool/{name}.json", {
+            "fallback": "minecraft:empty",
+            "elements": [{"weight": w, "element": {
+                "element_type": "minecraft:single_pool_element", "location": f"{NS}:{loc}",
+                "processors": "minecraft:empty", "projection": "rigid"}} for loc, w in elements]})
+
+    def structure(name, biomes, pool_name, adapt, depth, spacing, separation, salt):
+        write_json(f"{D}/worldgen/structure/{name}.json", {
+            "type": "minecraft:jigsaw",
+            "biomes": biomes,
+            "step": "surface_structures",
+            "spawn_overrides": {},
+            "terrain_adaptation": adapt,
+            "start_pool": f"{NS}:{pool_name}",
+            "size": 1,
+            "start_height": {"absolute": depth},
+            "project_start_to_heightmap": "WORLD_SURFACE_WG",
+            "max_distance_from_center": 116,
+            "use_expansion_hack": False})
+        write_json(f"{D}/worldgen/structure_set/{name}.json", {
+            "structures": [{"structure": f"{NS}:{name}", "weight": 1}],
+            "placement": {"type": "minecraft:random_spread", "spacing": spacing, "separation": separation, "salt": salt}})
+
+    pool("aul/start", [("aul/small", 5), ("aul/medium", 3), ("aul/large", 1)])
+    structure("aul", f"#{NS}:steppe", "aul/start", "beard_box", -1, 36, 14, 772031)
+    pool("camp/start", [("camp/camp_yurt", 1), ("camp/camp_fire", 1)])
+    structure("camp", f"#{NS}:has_kurgan", "camp/start", "beard_thin", -1, 18, 6, 553901)
+    pool("altyn_qorym/start", [("altyn_qorym", 1)])
+    structure("altyn_qorym", f"#{NS}:steppe", "altyn_qorym/start", "beard_thin", -5, 44, 16, 918273)
+    for old_file in (f"{D}/structure/aul.nbt",):
+        if os.path.exists(old_file):
+            os.remove(old_file)
 
 
 NAMES.update({
@@ -1199,6 +1231,478 @@ NAMES.update({
     "message.ezhelgi.kiiz_uy.no_room": ("Здесь мало места для юрты: нужна свободная ровная площадка.",
                                         "Киіз үйге орын жетпейді: бос тегіс алаң керек.",
                                         "Not enough room for a yurt: needs a clear flat area."),
+})
+
+
+# ------------------------------------------------------------------ v3: воин, украшения, новые юрты
+def stairs_and_slab(name, tex_block):
+    blk = lambda n: f"{NS}:block/{n}"
+    tex = {"bottom": blk(tex_block), "top": blk(tex_block), "side": blk(tex_block)}
+    write_json(f"{A}/models/block/{name}_stairs.json", {"parent": "minecraft:block/stairs", "textures": tex})
+    write_json(f"{A}/models/block/{name}_stairs_inner.json", {"parent": "minecraft:block/inner_stairs", "textures": tex})
+    write_json(f"{A}/models/block/{name}_stairs_outer.json", {"parent": "minecraft:block/outer_stairs", "textures": tex})
+    write_json(f"{A}/models/block/{name}_slab.json", {"parent": "minecraft:block/slab", "textures": tex})
+    write_json(f"{A}/models/block/{name}_slab_top.json", {"parent": "minecraft:block/slab_top", "textures": tex})
+    base = {"east": 0, "south": 90, "west": 180, "north": 270}
+    variants = {}
+    for facing, y0 in base.items():
+        for half in ("bottom", "top"):
+            for shape in ("straight", "inner_left", "inner_right", "outer_left", "outer_right"):
+                suffix = "_inner" if shape.startswith("inner") else "_outer" if shape.startswith("outer") else ""
+                y = y0
+                if half == "bottom" and shape.endswith("left"):
+                    y = y0 - 90
+                if half == "top" and shape.endswith("right"):
+                    y = y0 + 90
+                y %= 360
+                v = {"model": blk(name + "_stairs" + suffix)}
+                if half == "top":
+                    v["x"] = 180
+                if y:
+                    v["y"] = y
+                if half == "top" or y:
+                    v["uvlock"] = True
+                variants[f"facing={facing},half={half},shape={shape}"] = v
+    write_json(f"{A}/blockstates/{name}_stairs.json", {"variants": variants})
+    write_json(f"{A}/blockstates/{name}_slab.json", {"variants": {
+        "type=bottom": {"model": blk(name + "_slab")},
+        "type=top": {"model": blk(name + "_slab_top")},
+        "type=double": {"model": blk(tex_block)}}})
+    write_json(f"{A}/items/{name}_stairs.json", {"model": {"type": "minecraft:model", "model": blk(name + "_stairs")}})
+    write_json(f"{A}/items/{name}_slab.json", {"model": {"type": "minecraft:model", "model": blk(name + "_slab")}})
+
+
+def cube_block(name):
+    blk = f"{NS}:block/{name}"
+    write_json(f"{A}/blockstates/{name}.json", {"variants": {"": {"model": blk}}})
+    write_json(f"{A}/models/block/{name}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": blk}})
+    write_json(f"{A}/items/{name}.json", {"model": {"type": "minecraft:model", "model": blk}})
+
+
+def simple_item(name, handheld=False):
+    write_json(f"{A}/models/item/{name}.json", {
+        "parent": "minecraft:item/handheld" if handheld else "minecraft:item/generated",
+        "textures": {"layer0": f"{NS}:item/{name}"}})
+    write_json(f"{A}/items/{name}.json", {"model": {"type": "minecraft:model", "model": f"{NS}:item/{name}"}})
+
+
+ACC_PAL = dict(GOLD, t="#2bb5a6", r="#c0392b", b="#3a2412", w="#fff8e0", g="#8a8f98")
+
+ACCESSORY_ART = {
+    "barys_alqasy": [  # гривна с головами снежных барсов
+        "................",
+        "................",
+        "....kkkkkkkk....",
+        "...kmllllllmk...",
+        "..kml......mdk..",
+        ".kml........mdk.",
+        ".kml........mdk.",
+        ".kmk........kdk.",
+        ".kmk........kdk.",
+        "..kmk......kdk..",
+        "..kmlkk..kkmdk..",
+        "..kmtmk..kmtdk..",
+        "...kmmk..kmdk...",
+        "....kk....kk....",
+        "................",
+        "................",
+    ],
+    "bugy_tumary": [  # олень с ветвистыми рогами (сакский стиль)
+        "................",
+        "..k.k.k.........",
+        "..lklkl.k.......",
+        "..mlmlmkl.......",
+        "...kmmmlk.......",
+        "....kmmk........",
+        "...kmtmk........",
+        "...kmmmmkkkkk...",
+        "..kmllllllllmk..",
+        "..kmmmmmmmmmdk..",
+        "..kmdkkkkkkmdk..",
+        "...kdk....kdk...",
+        "...kmk....kmk...",
+        "....k......k....",
+        "................",
+        "................",
+    ],
+    "qasqyr_bilezigi": [  # браслет с головой волка
+        "................",
+        "................",
+        ".....kkkkkk.....",
+        "...kkmlllmmkk...",
+        "..kml......mdk..",
+        ".kml..kggk..mdk.",
+        ".kml.kggggk.mdk.",
+        ".kmk.kgtgtk.kdk.",
+        ".kmk..kggk..kdk.",
+        ".kml...kk...mdk.",
+        "..kml......mdk..",
+        "...kkmmmmmdkk...",
+        ".....kkkkkk.....",
+        "................",
+        "................",
+        "................",
+    ],
+    "arqar_syrgasy": [  # серьги с закрученными рогами архара
+        "................",
+        "...kk......kk...",
+        "..k..k....k..k..",
+        "..k..k....k..k..",
+        "...kk......kk...",
+        "...km......mk...",
+        "..kllmk..kmllk..",
+        ".klk.mk..km.klk.",
+        ".kmk.mk..km.kmk.",
+        "..kmmmk..kmmmk..",
+        "...ktk....ktk...",
+        "...kmk....kmk...",
+        "....k......k....",
+        "................",
+        "................",
+        "................",
+    ],
+    "tulpar_juzigi": [  # перстень с крылатым конём
+        "................",
+        "................",
+        "..kk..kkkk..kk..",
+        ".kwlkkmllmkklwk.",
+        ".kwwlkmrrmklwwk.",
+        "..kwwkmmmmkwwk..",
+        "...kkkmmmmkkk...",
+        ".....kkddkk.....",
+        "....km....mk....",
+        "...km......mk...",
+        "...kl......dk...",
+        "...km......mk...",
+        "....km....mk....",
+        ".....kkkkkk.....",
+        "................",
+        "................",
+    ],
+    "burkit_belbeui": [  # поясная бляха с беркутом
+        "................",
+        "................",
+        "................",
+        ".kkkkkkkkkkkkkk.",
+        ".kllllllllllllk.",
+        ".klk...kk...kdk.",
+        ".kl.k.kmmk.k.dk.",
+        ".kl..kmtmmk..dk.",
+        ".klkkmmmmmmkkdk.",
+        ".kl.kmmmmmmk.dk.",
+        ".kl...k..k...dk.",
+        ".kmddddddddddmk.",
+        ".kkkkkkkkkkkkkk.",
+        "................",
+        "................",
+        "................",
+    ],
+}
+
+KIT_ART = {
+    "qonyr_uy": ({"o": "#2a1a10", "q": "#7a4a2a", "Q": "#94603a", "w": "#efe6d2", "h": "#5a3518", "d": "#3a2412"}, [
+        "................",
+        ".......hh.......",
+        "......oqqo......",
+        ".....oqQqqo.....",
+        "....oqwwwwqo....",
+        "...oqqqqqqqqo...",
+        "..oqqQqqqqQqqo..",
+        ".owwwwwwwwwwwwo.",
+        ".oqwqwqwqwqwqwo.",
+        ".oqqqqqqqqqqqqo.",
+        ".oqqqqqddqqqqqo.",
+        ".oqqqqqddqqqqqo.",
+        ".owqwqwddwqwqwo.",
+        ".owwwwwddwwwwwo.",
+        ".oooooooooooooo.",
+        "................"]),
+    "otau": ({"o": "#3a2412", "w": "#f6f1e4", "R": "#b4251f", "r": "#d0402c", "d": "#6b2a1a", "g": "#e8b23a"}, [
+        "................",
+        "................",
+        ".......gg.......",
+        "......oRRo......",
+        ".....owRwwo.....",
+        "....owwRwwwo....",
+        "...owwwRwwwwo...",
+        "..oRRRRRRRRRRo..",
+        "..owwwwwwwwwwo..",
+        "..owrwwddwwrwo..",
+        "..owwwwddwwwwo..",
+        "..owrwwddwwrwo..",
+        "..oRRRRddRRRRo..",
+        "..oooooooooooo..",
+        "................",
+        "................"]),
+    "han_ordasy": ({"o": "#3a2412", "w": "#f6f1e4", "g": "#f2c230", "G": "#b9831a", "R": "#b4251f", "d": "#4a2a14"}, [
+        "......gGGg......",
+        ".......gg.......",
+        "......owwo......",
+        "....owwgwwwo....",
+        "...owwwgwwwwo...",
+        "..owwwwgwwwwwo..",
+        ".owwwwwgwwwwwwo.",
+        "oggggggggggggggo",
+        "owwgwwwwwwwwgwwo",
+        "owwgwwwddwwwgwwo",
+        "owwgwwdggdwwgwwo",
+        "owwgwwdggdwwgwwo",
+        "oRRRRRRddRRRRRRo",
+        "oggggggggggggggo",
+        "oooooooooooooooo",
+        "................"]),
+}
+
+
+def v3_textures():
+    for name, art in ACCESSORY_ART.items():
+        from_art(art, ACC_PAL).save("item/" + name)
+    for name, (pal, art) in KIT_ART.items():
+        from_art(art, pal).save("item/" + name)
+
+    # Алтын қанжар — акинак с «бабочкой» у рукояти
+    c = Canvas(seed=61)
+    for i in range(7):
+        x, y = 6 + i, 9 - i
+        c.set(x, y, GOLD["m"]); c.set(x + 1, y, GOLD["l"]); c.set(x, y + 1, GOLD["d"])
+    c.set(13, 2, GOLD["l"]); c.set(14, 1, GOLD["l"])
+    for (x, y) in [(4, 9), (5, 10), (6, 11), (3, 8), (7, 12), (5, 9), (6, 10)]:
+        c.set(x, y, "#c0392b" if (x + y) % 2 else GOLD["m"])
+    c.line(4, 11, 2, 13, "#5a3418")
+    c.set(1, 14, GOLD["l"]); c.set(2, 14, GOLD["m"]); c.set(1, 13, GOLD["m"])
+    c.outline("#20160c")
+    c.save("item/altyn_qanjar")
+
+    # яйцо золотого воина
+    c = Canvas(seed=62)
+    for y in range(16):
+        for x in range(16):
+            dx, dy = (x - 7.5) / 5.2, (y - 8.8) / 6.6
+            if dy < 0:
+                dx *= 1.15
+            if dx * dx + dy * dy <= 1:
+                c.set(x, y, "#e8b23a" if (x + y) % 4 else "#b4251f")
+    c.noise(0.05)
+    c.outline("#1c1c1c")
+    c.save("item/altyn_jauynger_spawn_egg")
+
+    # блоки: коричневый войлок и орнаменты
+    c = Canvas(seed=63)
+    c.rect(0, 0, 15, 15, "#7a4a2a")
+    c.noise(0.05)
+    rng = random.Random(63)
+    for _ in range(12):
+        c.set(rng.randint(0, 15), rng.randint(0, 15), "#6a3e22")
+    c.save("block/qonyr_kiiz")
+    motif_carpet("qonyr_oiu", "#7a4a2a", "#f1eee5", "#f1eee5", 64)
+    motif_carpet("aq_oiu", "#f1eee5", "#7a4a2a", "#a3201c", 65)
+
+    # GUI окна аксессуаров
+    g = Canvas(256, 256, seed=66)
+    W, H = 176, 166
+    g.rect(0, 0, W - 1, H - 1, "#c6c6c6")
+    for x in range(W):
+        g.set(x, 0, "#000000"); g.set(x, H - 1, "#000000")
+        g.set(x, 1, "#ffffff"); g.set(x, H - 2, "#555555")
+    for y in range(H):
+        g.set(0, y, "#000000"); g.set(W - 1, y, "#000000")
+        g.set(1, y, "#ffffff"); g.set(W - 2, y, "#555555")
+
+    def slot(x, y, gold=False):
+        x0, y0 = x - 1, y - 1
+        g.rect(x0, y0, x0 + 17, y0 + 17, "#8b8b8b")
+        dark, light = ("#7a4f0c", "#fff3a8") if gold else ("#373737", "#ffffff")
+        for i in range(18):
+            g.set(x0 + i, y0, dark); g.set(x0, y0 + i, dark)
+            g.set(x0 + i, y0 + 17, light); g.set(x0 + 17, y0 + i, light)
+        if gold:
+            g.set(x0 + 8, y0 + 8, "#b9831a"); g.set(x0 + 9, y0 + 9, "#b9831a")
+            g.set(x0 + 8, y0 + 9, "#e8b23a"); g.set(x0 + 9, y0 + 8, "#e8b23a")
+    for (sx, sy) in [(53, 34), (71, 34), (89, 34), (107, 34)]:
+        slot(sx, sy, gold=True)
+    # орнамент «қошқар мүйіз» по бокам от слотов
+    for ox in (20, 134):
+        for yy, row in enumerate(CARPET_MOTIF):
+            for xx, ch in enumerate(row):
+                if ch == "1":
+                    g.set(ox + xx * 2, 30 + yy * 2, "#b9831a"); g.set(ox + xx * 2 + 1, 30 + yy * 2, "#b9831a")
+    for row in range(3):
+        for col in range(9):
+            slot(8 + col * 18, 84 + row * 18)
+    for col in range(9):
+        slot(8 + col * 18, 142)
+    g.save("gui/accessories")
+
+    warrior_skin()
+
+
+def warrior_skin():
+    c = Canvas(64, 64, seed=71)
+    SK, SKD, HAIR = (176, 120, 82, 255), (150, 98, 64, 255), (34, 24, 20, 255)
+
+    def face(fname, x, y, w, h):
+        pass
+    # голова: смуглая кожа, чёрные волосы, глаза и усы
+    head_kind = lambda y: "hair" if y <= 1 else "skin"
+    for (u, v, w, h) in [(0, 8, 8, 8), (16, 8, 8, 8), (24, 8, 8, 8)]:  # бока и затылок
+        for yy in range(h):
+            for xx in range(w):
+                c.set(u + xx, v + yy, HAIR if (yy <= 3 or (u == 24)) else SK)
+    for xx in range(8):
+        for yy in range(8):
+            c.set(8 + xx, yy, HAIR)          # макушка
+            c.set(16 + xx, yy, SKD)          # низ головы
+            col = SK
+            if yy <= 1:
+                col = HAIR
+            if yy == 3 and xx in (1, 2, 5, 6):
+                col = HAIR
+            if yy == 4 and xx in (1, 6):
+                col = (240, 240, 240, 255)
+            if yy == 4 and xx in (2, 5):
+                col = (40, 30, 24, 255)
+            if yy == 6 and 2 <= xx <= 5:
+                col = HAIR
+            c.set(8 + xx, 8 + yy, col)
+    # головной убор (слой шапки): золотой обод с бирюзой и красная шапка
+    _box(c, 32, 0, 8, 8, 8, lambda y: "band" if y <= 2 else "none", top_kind="gold")
+    for xx in range(8):
+        for yy in range(3, 8):
+            for u0 in (32, 40, 48, 56):
+                pass
+    # кафтан, рукава с кистями рук, штаны и сапоги
+    _box(c, 16, 16, 8, 12, 4, lambda y: "gold" if y == 0 else ("band" if y in (8, 9, 10) else "plaques"),
+         top_kind="gold", bottom_kind="plaques")
+    for y in range(1, 8):
+        c.set(23, 20 + y, ARMOR["gl"]); c.set(24, 20 + y, ARMOR["gd"])
+    _box(c, 40, 16, 4, 12, 4, lambda y: "gold" if y in (0, 1, 8, 9) else ("skin" if y >= 10 else "plaques"),
+         top_kind="gold", bottom_kind="skin")
+    _box(c, 0, 16, 4, 12, 4, lambda y: "band" if y == 7 else ("gold" if y >= 8 else "plaques"),
+         top_kind="plaques", bottom_kind="sole")
+    c.save("entity/altyn_jauynger")
+
+
+def v3_models():
+    cube_block("qonyr_kiiz")
+    cube_block("qonyr_oiu")
+    cube_block("aq_oiu")
+    stairs_and_slab("qonyr_kiiz", "qonyr_kiiz")
+    for name in list(ACCESSORY_ART) + list(KIT_ART) + ["altyn_jauynger_spawn_egg"]:
+        simple_item(name)
+    simple_item("altyn_qanjar", handheld=True)
+
+
+def v3_data():
+    e = lambda n: f"{NS}:{n}"
+    for b in ["qonyr_kiiz", "qonyr_kiiz_stairs", "qonyr_kiiz_slab", "qonyr_oiu", "aq_oiu"]:
+        write_json(f"{D}/loot_table/blocks/{b}.json", {
+            "type": "minecraft:block",
+            "pools": [{"condition": {"type": "minecraft:survives_explosion"},
+                       "entries": [{"type": "minecraft:item", "name": e(b)}], "rolls": 1}],
+            "random_sequence": f"{NS}:blocks/{b}"})
+    # рецепты
+    shapeless("qonyr_kiiz", ["minecraft:brown_wool", "minecraft:brown_wool", "minecraft:leather"], e("qonyr_kiiz"), 3, "building")
+    shaped("qonyr_kiiz_stairs", ["K  ", "KK ", "KKK"], {"K": e("qonyr_kiiz")}, e("qonyr_kiiz_stairs"), 4, "building")
+    shaped("qonyr_kiiz_slab", ["KKK"], {"K": e("qonyr_kiiz")}, e("qonyr_kiiz_slab"), 6, "building")
+    shapeless("qonyr_oiu", [e("qonyr_kiiz"), e("qonyr_kiiz"), "minecraft:white_dye"], e("qonyr_oiu"), 2, "building")
+    shapeless("aq_oiu", [e("kiiz"), e("kiiz"), "minecraft:brown_dye"], e("aq_oiu"), 2, "building")
+    shaped("altyn_qanjar", [" G", "S "], {"G": e("saka_gold"), "S": "minecraft:stick"}, e("altyn_qanjar"), category="equipment")
+    G, S = "minecraft:gold_ingot", e("saka_gold")
+    shaped("barys_alqasy", ["SGS", "G G", " D "], {"S": S, "G": G, "D": "minecraft:diamond"}, e("barys_alqasy"), category="equipment")
+    shaped("bugy_tumary", [" S ", "GLG", " G "], {"S": S, "G": G, "L": "minecraft:leather"}, e("bugy_tumary"), category="equipment")
+    shaped("qasqyr_bilezigi", ["GSG", "B B", "GSG"], {"S": S, "G": G, "B": "minecraft:bone"}, e("qasqyr_bilezigi"), category="equipment")
+    shaped("arqar_syrgasy", ["S S", "G G", "E E"], {"S": S, "G": G, "E": "minecraft:emerald"}, e("arqar_syrgasy"), category="equipment")
+    shaped("tulpar_juzigi", [" F ", "GSG", " G "], {"S": S, "G": G, "F": "minecraft:feather"}, e("tulpar_juzigi"), category="equipment")
+    shaped("burkit_belbeui", ["FSF", "GGG"], {"S": S, "G": G, "F": "minecraft:feather"}, e("burkit_belbeui"), category="equipment")
+    shaped("qonyr_uy", ["OSO", "QUQ", "MMM"], {"O": e("qonyr_oiu"), "S": e("shanyrak"), "Q": e("qonyr_kiiz_stairs"),
+                                               "U": e("kiiz_uy"), "M": e("tekemet")}, e("qonyr_uy"))
+    shaped("otau", ["BSB", "KUK", "AAA"], {"B": e("baskur"), "S": e("shanyrak"), "K": e("kiiz_stairs"),
+                                          "U": e("kiiz_uy"), "A": e("aq_oiu")}, e("otau"))
+    shaped("han_ordasy", ["GSG", "UUU", "OOO"], {"G": "minecraft:gold_block", "S": e("shanyrak"),
+                                                "U": e("ulken_kiiz_uy"), "O": e("ornek")}, e("han_ordasy"))
+
+    def it(name, w, lo=1, hi=1):
+        x = {"type": "minecraft:item", "name": name, "weight": w}
+        if hi > 1:
+            x["modifier"] = [{"type": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": lo, "max": hi}}]
+        return x
+    acc = [e(n) for n in ACCESSORY_ART]
+    write_json(f"{D}/loot_table/entities/altyn_jauynger.json", {
+        "type": "minecraft:entity",
+        "pools": [
+            {"rolls": 1, "entries": [it("minecraft:gold_nugget", 1, 3, 9)]},
+            {"rolls": 1, "condition": {"type": "minecraft:killed_by_player"},
+             "entries": [it(e("saka_gold"), 6, 1, 3), {"type": "minecraft:empty", "weight": 4}]},
+            {"rolls": 1, "condition": {"type": "minecraft:killed_by_player"},
+             "entries": [it(a, 1) for a in acc] + [it(e("altyn_qanjar"), 2), {"type": "minecraft:empty", "weight": 70}]}],
+        "random_sequence": f"{NS}:entities/altyn_jauynger"})
+    write_json(f"{D}/loot_table/chests/altyn_qorym.json", {
+        "type": "minecraft:chest",
+        "pools": [
+            {"rolls": {"type": "minecraft:uniform", "min": 4, "max": 7}, "entries": [
+                it(e("saka_gold"), 25, 2, 6), it("minecraft:gold_ingot", 25, 3, 9), it("minecraft:gold_block", 4),
+                it("minecraft:golden_apple", 6), it(e("kumys"), 6, 1, 3), it("minecraft:arrow", 8, 6, 16)]},
+            {"rolls": {"type": "minecraft:uniform", "min": 1, "max": 2}, "entries":
+                [it(a, 5) for a in acc] + [
+                it(e("altyn_qanjar"), 6), it(e("altyn_qylysh"), 5), it(e("altyn_adam_helmet"), 4),
+                it(e("altyn_adam_chestplate"), 3), it(e("altyn_adam_leggings"), 3), it(e("altyn_adam_boots"), 4),
+                it("minecraft:enchanted_golden_apple", 1)]}],
+        "random_sequence": f"{NS}:chests/altyn_qorym"})
+    write_json(f"{D}/loot_table/chests/han.json", {
+        "type": "minecraft:chest",
+        "pools": [
+            {"rolls": {"type": "minecraft:uniform", "min": 3, "max": 6}, "entries": [
+                it(e("saka_gold"), 15, 1, 4), it("minecraft:gold_ingot", 20, 2, 6), it(e("beshbarmak"), 10),
+                it(e("kumys"), 12, 1, 3), it(e("kazy"), 10, 1, 3), it("minecraft:emerald", 10, 1, 4)]},
+            {"rolls": 1, "entries": [it(a, 3) for a in acc] + [it(e("altyn_qylysh"), 3), it(e("dombyra"), 4),
+                                                              {"type": "minecraft:empty", "weight": 6}]}],
+        "random_sequence": f"{NS}:chests/han"})
+    write_json(f"{D}/loot_table/chests/camp.json", {
+        "type": "minecraft:chest",
+        "pools": [{"rolls": {"type": "minecraft:uniform", "min": 2, "max": 5}, "entries": [
+            it(e("baursak"), 20, 2, 6), it(e("kurt"), 18, 2, 5), it(e("kazy"), 10, 1, 2), it(e("kumys"), 10, 1, 2),
+            it("minecraft:leather", 12, 1, 4), it("minecraft:arrow", 10, 4, 12), it("minecraft:saddle", 4),
+            it("minecraft:lead", 6), it(e("sadaq"), 3), it(e("tekemet"), 6, 1, 3)]}],
+        "random_sequence": f"{NS}:chests/camp"})
+    # золотой воин изредка бродит по степи ночью
+    write_json(f"{D}/forge/biome_modifier/add_altyn_jauynger.json", {
+        "type": "forge:add_spawns", "biomes": f"#{NS}:steppe",
+        "spawners": [{"type": e("altyn_jauynger"), "count": {"type": "minecraft:uniform", "min_inclusive": 1, "max_inclusive": 2}, "weight": 4}]})
+
+    # все рецепты мода сразу открыты в книге рецептов
+    recipes = sorted(f"{NS}:" + f[:-5] for f in os.listdir(f"{D}/recipe") if f.endswith(".json"))
+    write_json(f"{D}/advancement/recipes/all.json", {
+        "criteria": {"tick": {"trigger": "minecraft:tick"}},
+        "requirements": [["tick"]],
+        "rewards": {"recipes": recipes}})
+
+
+NAMES.update({
+    "item.ezhelgi.altyn_qanjar": ("Золотой кинжал (акинак)", "Алтын қанжар", "Golden Dagger"),
+    "item.ezhelgi.altyn_jauynger_spawn_egg": ("Яйцо призыва золотого воина", "Алтын жауынгер жұмыртқасы", "Golden Warrior Spawn Egg"),
+    "item.ezhelgi.qonyr_uy": ("Коричневая юрта (набор)", "Қоңыр үй", "Brown Yurt Kit"),
+    "item.ezhelgi.otau": ("Отау — свадебная юрта (набор)", "Отау", "Otau Wedding Yurt Kit"),
+    "item.ezhelgi.han_ordasy": ("Ханская орда (набор)", "Хан ордасы", "Khan's Horde Yurt Kit"),
+    "item.ezhelgi.barys_alqasy": ("Гривна снежного барса", "Барыс алқасы", "Snow Leopard Torc"),
+    "item.ezhelgi.bugy_tumary": ("Амулет оленя", "Бұғы тұмары", "Deer Amulet"),
+    "item.ezhelgi.qasqyr_bilezigi": ("Браслет волка", "Қасқыр білезігі", "Wolf Bracelet"),
+    "item.ezhelgi.arqar_syrgasy": ("Серьги архара", "Арқар сырғасы", "Argali Earrings"),
+    "item.ezhelgi.tulpar_juzigi": ("Перстень тулпара", "Тұлпар жүзігі", "Tulpar Ring"),
+    "item.ezhelgi.burkit_belbeui": ("Поясная бляха беркута", "Бүркіт белбеуі", "Eagle Belt Plaque"),
+    "block.ezhelgi.qonyr_kiiz": ("Коричневый войлок", "Қоңыр киіз", "Brown Kiiz Felt"),
+    "block.ezhelgi.qonyr_kiiz_stairs": ("Коричневые войлочные ступени", "Қоңыр киіз баспалдақ", "Brown Kiiz Stairs"),
+    "block.ezhelgi.qonyr_kiiz_slab": ("Коричневая войлочная плита", "Қоңыр киіз тақта", "Brown Kiiz Slab"),
+    "block.ezhelgi.qonyr_oiu": ("Коричневый войлок с орнаментом", "Қоңыр ою", "Brown Ornament Felt"),
+    "block.ezhelgi.aq_oiu": ("Белый войлок с орнаментом", "Ақ ою", "White Ornament Felt"),
+    "entity.ezhelgi.altyn_jauynger": ("Золотой воин", "Алтын жауынгер", "Golden Warrior"),
+    "container.ezhelgi.accessories": ("Украшения", "Әшекейлер", "Accessories"),
+    "tooltip.ezhelgi.accessory": ("Носится в слоте украшений (кнопка ◆ у брони)", "Әшекей ұяшығына тағылады (◆ батырмасы)", "Worn in an accessory slot (◆ button by armor)"),
+    "tooltip.ezhelgi.barys_alqasy": ("+4 к здоровью", "+4 денсаулық", "+4 max health"),
+    "tooltip.ezhelgi.bugy_tumary": ("+12% к скорости", "+12% жылдамдық", "+12% speed"),
+    "tooltip.ezhelgi.qasqyr_bilezigi": ("+2 к урону", "+2 соққы күші", "+2 attack damage"),
+    "tooltip.ezhelgi.arqar_syrgasy": ("Ночное зрение", "Түнгі көру", "Night vision"),
+    "tooltip.ezhelgi.tulpar_juzigi": ("Меньше урона от падения", "Құлағанда аз зақым", "Less fall damage"),
+    "tooltip.ezhelgi.burkit_belbeui": ("+3 к броне", "+3 сауыт", "+3 armor"),
 })
 
 
@@ -1220,5 +1724,8 @@ if __name__ == "__main__":
     yurt_textures()
     yurt_models()
     yurt_data()
+    v3_textures()
+    v3_models()
+    v3_data()
     lang()
     print("assets done")

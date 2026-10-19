@@ -33,4 +33,11 @@ public final class ModEntities {
                     .sized(0.6f, 0.9f)
                     .clientTrackingRange(8)
                     .build(ENTITY_TYPES.key("berkut")));
+
+    /** Алтын жауынгер — золотой воин, страж курганов. */
+    public static final RegistryObject<EntityType<AltynJauynger>> ALTYN_JAUYNGER = ENTITY_TYPES.register("altyn_jauynger",
+            () -> EntityType.Builder.of(AltynJauynger::new, MobCategory.MONSTER)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(8)
+                    .build(ENTITY_TYPES.key("altyn_jauynger")));
 }

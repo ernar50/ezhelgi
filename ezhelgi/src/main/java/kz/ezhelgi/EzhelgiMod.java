@@ -3,6 +3,9 @@ package kz.ezhelgi;
 import com.mojang.logging.LogUtils;
 import kz.ezhelgi.block.ModBlocks;
 import kz.ezhelgi.client.EzhelgiClient;
+import kz.ezhelgi.accessory.Accessories;
+import kz.ezhelgi.accessory.ModMenus;
+import kz.ezhelgi.entity.AltynJauynger;
 import kz.ezhelgi.entity.Berkut;
 import kz.ezhelgi.entity.Kokbori;
 import kz.ezhelgi.entity.ModEntities;
@@ -12,6 +15,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -50,6 +54,8 @@ public final class EzhelgiMod {
         ModItems.ITEMS.register(modBusGroup);
         ModEntities.ENTITY_TYPES.register(modBusGroup);
         CREATIVE_TABS.register(modBusGroup);
+        ModMenus.MENUS.register(modBusGroup);
+        Accessories.init();
 
         EntityAttributeCreationEvent.BUS.addListener(EzhelgiMod::registerAttributes);
         SpawnPlacementRegisterEvent.BUS.addListener(EzhelgiMod::registerSpawnPlacements);
@@ -65,6 +71,7 @@ public final class EzhelgiMod {
         event.put(ModEntities.KOKBORI.get(), Kokbori.createAttributes().build());
         event.put(ModEntities.TULPAR.get(), Tulpar.createAttributes().build());
         event.put(ModEntities.BERKUT.get(), Berkut.createAttributes().build());
+        event.put(ModEntities.ALTYN_JAUYNGER.get(), AltynJauynger.createAttributes().build());
     }
 
     private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
@@ -74,5 +81,7 @@ public final class EzhelgiMod {
                 Animal::checkAnimalSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.BERKUT.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Animal::checkAnimalSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.ALTYN_JAUYNGER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

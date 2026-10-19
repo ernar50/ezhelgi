@@ -35,6 +35,21 @@ public final class ModBlocks {
     public static final RegistryObject<Block> BASKUR = register("baskur", Block::new,
             p -> p.mapColor(MapColor.SNOW).strength(0.8f).sound(SoundType.WOOL).ignitedByLava());
 
+    /** Қоңыр киіз — коричневый войлок, ступени и плита. */
+    public static final RegistryObject<Block> QONYR_KIIZ = register("qonyr_kiiz", Block::new,
+            p -> p.mapColor(MapColor.COLOR_BROWN).strength(0.8f).sound(SoundType.WOOL).ignitedByLava());
+    public static final RegistryObject<Block> QONYR_KIIZ_STAIRS = register("qonyr_kiiz_stairs",
+            p -> new StairBlock(QONYR_KIIZ.get().defaultBlockState(), p),
+            p -> p.mapColor(MapColor.COLOR_BROWN).strength(0.8f).sound(SoundType.WOOL).ignitedByLava());
+    public static final RegistryObject<Block> QONYR_KIIZ_SLAB = register("qonyr_kiiz_slab", SlabBlock::new,
+            p -> p.mapColor(MapColor.COLOR_BROWN).strength(0.8f).sound(SoundType.WOOL).ignitedByLava());
+    /** Қоңыр ою — коричневый войлок с белым орнаментом «қошқар мүйіз». */
+    public static final RegistryObject<Block> QONYR_OIU = register("qonyr_oiu", Block::new,
+            p -> p.mapColor(MapColor.COLOR_BROWN).strength(0.8f).sound(SoundType.WOOL).ignitedByLava());
+    /** Ақ ою — белый войлок с коричневым орнаментом. */
+    public static final RegistryObject<Block> AQ_OIU = register("aq_oiu", Block::new,
+            p -> p.mapColor(MapColor.SNOW).strength(0.8f).sound(SoundType.WOOL).ignitedByLava());
+
     /** Кереге — решётчатая деревянная стена юрты. */
     public static final RegistryObject<Block> KEREGE = register("kerege", Block::new,
             p -> p.mapColor(MapColor.WOOD).strength(1.5f).sound(SoundType.WOOD).ignitedByLava());

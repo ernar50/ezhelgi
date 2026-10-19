@@ -4,7 +4,11 @@ import kz.ezhelgi.EzhelgiMod;
 import kz.ezhelgi.entity.ModEntities;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.Identifier;
+import kz.ezhelgi.accessory.ModMenus;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
 
 /** Клиентская часть: модели и рендереры животных. Загружается только на клиенте. */
@@ -14,16 +18,24 @@ public final class EzhelgiClient {
     public static final ModelLayerLocation KOKBORI_LAYER = layer("kokbori");
     public static final ModelLayerLocation TULPAR_LAYER = layer("tulpar");
     public static final ModelLayerLocation BERKUT_LAYER = layer("berkut");
+    public static final ModelLayerLocation ALTYN_JAUYNGER_LAYER = layer("altyn_jauynger");
 
     public static void init(BusGroup modBusGroup) {
         EntityRenderersEvent.RegisterLayerDefinitions.BUS.addListener(EzhelgiClient::registerLayers);
         EntityRenderersEvent.RegisterRenderers.BUS.addListener(EzhelgiClient::registerRenderers);
+        FMLClientSetupEvent.getBus(modBusGroup).addListener(EzhelgiClient::clientSetup);
+        ScreenEvent.Init.Post.BUS.addListener(AccessoryButton::onScreenInit);
+    }
+
+    private static void clientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> MenuScreens.register(ModMenus.ACCESSORIES.get(), AccessoryScreen::new));
     }
 
     private static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(KOKBORI_LAYER, KokboriModel::createBodyLayer);
         event.registerLayerDefinition(TULPAR_LAYER, TulparModel::createBodyLayer);
         event.registerLayerDefinition(BERKUT_LAYER, BerkutModel::createBodyLayer);
+        event.registerLayerDefinition(ALTYN_JAUYNGER_LAYER, AltynJauyngerRenderer::createBodyLayer);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -33,6 +45,7 @@ public final class EzhelgiClient {
                 new TulparModel(ctx.bakeLayer(TULPAR_LAYER)), 0.75f, texture("tulpar"), 1.0f));
         event.registerEntityRenderer(ModEntities.BERKUT.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
                 new BerkutModel(ctx.bakeLayer(BERKUT_LAYER)), 0.3f, texture("berkut"), 1.0f));
+        event.registerEntityRenderer(ModEntities.ALTYN_JAUYNGER.get(), AltynJauyngerRenderer::new);
     }
 
     private static ModelLayerLocation layer(String name) {
