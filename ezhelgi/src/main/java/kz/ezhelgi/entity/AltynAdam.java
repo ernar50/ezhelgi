@@ -229,8 +229,10 @@ public class AltynAdam extends Monster {
             double dx = victim.getX() - this.getX();
             double dz = victim.getZ() - this.getZ();
             double dist = Math.max(0.5, Math.sqrt(dx * dx + dz * dz));
-            victim.hurtServer(level, this.damageSources().mobAttack(this), (float) Mth.clamp(12.0 - dist, 4.0, 10.0));
-            victim.knockback(1.6, -dx / dist, -dz / dist);
+            DamageSource slamDamage = this.damageSources().mobAttack(this);
+            float damage = (float) Mth.clamp(12.0 - dist, 4.0, 10.0);
+            victim.hurtServer(level, slamDamage, damage);
+            victim.knockback(1.6, -dx / dist, -dz / dist, slamDamage, damage);
             victim.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 2));
         }
     }
