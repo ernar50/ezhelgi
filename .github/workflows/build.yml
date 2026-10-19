@@ -1,0 +1,41 @@
+name: Собрать мод
+
+on:
+  push:
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ezhelgi
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Текстуры, модели и данные
+        run: |
+          pip install pillow
+          python3 tools/gen_models.py
+          python3 tools/gen_assets.py
+
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.7.1"
+
+      - name: Сборка
+        run: gradle build --stacktrace
+
+      - name: Готовый мод
+        uses: actions/upload-artifact@v4
+        with:
+          name: ezhelgi-mod
+          path: ezhelgi/build/libs/*.jar
