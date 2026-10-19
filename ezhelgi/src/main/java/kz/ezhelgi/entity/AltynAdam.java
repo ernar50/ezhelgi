@@ -159,7 +159,6 @@ public class AltynAdam extends Monster {
             if (--this.comboTimer <= 0 && target != null) {
                 this.comboTimer = 5;
                 this.comboHits--;
-                this.swing(InteractionHand.MAIN_HAND);
                 if (this.distanceTo(target) < 4.0f) {
                     target.hurtServer(level, this.damageSources().mobAttack(this), 6.0f);
                 }
@@ -231,8 +230,7 @@ public class AltynAdam extends Monster {
             double dz = victim.getZ() - this.getZ();
             double dist = Math.max(0.5, Math.sqrt(dx * dx + dz * dz));
             victim.hurtServer(level, this.damageSources().mobAttack(this), (float) Mth.clamp(12.0 - dist, 4.0, 10.0));
-            victim.setDeltaMovement(victim.getDeltaMovement().add(dx / dist * 1.4, 0.6, dz / dist * 1.4));
-            victim.hurtMarked = true;
+            victim.knockback(1.6, -dx / dist, -dz / dist);
             victim.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 2));
         }
     }

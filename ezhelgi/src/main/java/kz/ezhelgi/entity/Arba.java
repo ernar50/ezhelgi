@@ -149,7 +149,7 @@ public class Arba extends Mob {
                 this.hitch(horse);
                 player.sendSystemMessage(Component.translatable("message.ezhelgi.arba.hitched"));
             }
-            this.playSound(SoundEvents.LEASH_KNOT_PLACE, 1.0f, 1.0f);
+            this.playSound(SoundEvents.WOOD_PLACE, 1.0f, 1.0f);
             return InteractionResult.SUCCESS;
         }
         if (player.isSecondaryUseActive()) {
