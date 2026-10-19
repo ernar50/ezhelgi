@@ -9,6 +9,11 @@ import kz.ezhelgi.entity.AltynAdam;
 import kz.ezhelgi.entity.AltynJauynger;
 import kz.ezhelgi.entity.Arba;
 import kz.ezhelgi.entity.Jungar;
+import kz.ezhelgi.entity.Albasty;
+import kz.ezhelgi.entity.BatyrAruagy;
+import kz.ezhelgi.entity.Samuryk;
+import kz.ezhelgi.entity.ZhalmauyzKempir;
+import kz.ezhelgi.entity.Zheztyrnak;
 import kz.ezhelgi.sound.ModSounds;
 import kz.ezhelgi.entity.Berkut;
 import kz.ezhelgi.entity.Kokbori;
@@ -48,7 +53,9 @@ public final class EzhelgiMod {
             .title(Component.translatable("itemGroup.ezhelgi"))
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
             .icon(() -> ModItems.ALTYN_QYLYSH.get().getDefaultInstance())
-            .displayItems((params, output) -> ModItems.ITEMS.getEntries().forEach(item -> output.accept(item.get())))
+            .displayItems((params, output) -> ModItems.ITEMS.getEntries().stream()
+                    .filter(item -> item != ModItems.ARUAQ_SPECTRAL)
+                    .forEach(item -> output.accept(item.get())))
             .build());
 
     public EzhelgiMod(FMLJavaModLoadingContext context) {
@@ -80,6 +87,11 @@ public final class EzhelgiMod {
         event.put(ModEntities.JUNGAR.get(), Jungar.createAttributes().build());
         event.put(ModEntities.ALTYN_ADAM.get(), AltynAdam.createAttributes().build());
         event.put(ModEntities.ARBA.get(), Arba.createAttributes().build());
+        event.put(ModEntities.ZHEZTYRNAK.get(), Zheztyrnak.createAttributes().build());
+        event.put(ModEntities.BATYR_ARUAGY.get(), BatyrAruagy.createAttributes().build());
+        event.put(ModEntities.ALBASTY.get(), Albasty.createAttributes().build());
+        event.put(ModEntities.ZHALMAUYZ_KEMPIR.get(), ZhalmauyzKempir.createAttributes().build());
+        event.put(ModEntities.SAMURYK.get(), Samuryk.createAttributes().build());
     }
 
     private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
@@ -94,5 +106,16 @@ public final class EzhelgiMod {
         // джунгары бродят по степи и днём
         event.register(ModEntities.JUNGAR.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkAnyLightMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        // жезтырнақ притворяется девушкой и днём
+        event.register(ModEntities.ZHEZTYRNAK.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkAnyLightMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.BATYR_ARUAGY.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                BatyrAruagy::checkSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.ALBASTY.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Albasty::checkSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.ZHALMAUYZ_KEMPIR.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.SAMURYK.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

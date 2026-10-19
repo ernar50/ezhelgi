@@ -444,12 +444,130 @@ arba.write_java("ArbaModel", """
         this.wheel_r.xRot = state.wheel;
         this.shafts.xRot = 0.12F;""", "Модель арбы — деревянной телеги с большими колёсами.")
 
+
+# ---------------------------------------------------------------- Самұрық
+sam = Model("samuryk", 128, 128, {
+    "gold": (240, 188, 52), "gold_l": (255, 226, 120), "gold_d": (196, 136, 28),
+    "red": (196, 52, 30), "red_d": (140, 30, 22), "orange": (232, 112, 36),
+    "turq": (44, 178, 168), "turq_d": (22, 112, 108), "white": (250, 244, 224),
+    "eye": (20, 16, 12), "eye_ring": (255, 250, 210), "beak": (250, 214, 90), "beak_d": (200, 150, 40),
+    "leg": (150, 96, 30),
+}, 55)
+
+
+def sam_body(face, x, y, w, h):
+    if face == "bottom":
+        return "gold_l"
+    # чешуйки перьев
+    if (x + (y // 2) * 2) % 4 == 0 and y % 2 == 1:
+        return "gold_d"
+    if face == "top" and (x * 3 + y) % 7 == 0:
+        return "gold_l"
+    return None
+
+
+def sam_wing(face, x, y, w, h):
+    # y — вдоль крыла (от плеча к концу), x — ширина
+    if face in ("left", "right"):
+        if y >= h - 4:
+            return "gold" if (x + y) % 2 else "gold_l"
+        if y >= h - 8:
+            return "red" if x % 2 else "orange"
+        if x % 3 == 0:
+            return "red_d"
+        return "orange" if y % 3 else "gold"
+    if face in ("front", "back"):
+        return "gold_d" if y >= h - 4 else "red_d"
+    return "red"
+
+
+def sam_plume(face, x, y, w, h):
+    # длинное хвостовое перо с «глазком» на конце
+    if face in ("top", "bottom"):
+        t = y
+        if t >= h - 4:
+            cx = (w - 1) / 2
+            if abs(x - cx) <= 0.6 and h - 3 <= t <= h - 2:
+                return "turq_d"
+            return "turq"
+        if t >= h - 6:
+            return "gold_l"
+        return "red" if (t // 2) % 2 else "orange"
+    return "red_d"
+
+
+def sam_head(face, x, y, w, h):
+    if face in ("left", "right") and y == 1 and x in (2, 3):
+        return "eye" if x == 2 else "eye_ring"
+    return sam_body(face, x, y, w, h)
+
+
+def crest(face, x, y, w, h):
+    return "turq" if y <= 1 else ("gold_l" if y % 2 else "red")
+
+
+sam.part("body", "root", (0, 15, 0), (-0.15, 0, 0), cubes=[(-3.5, -4, -6, 7, 7, 12, "gold", {"paint": sam_body}),
+                                                          (-2.5, -3, -7.5, 5, 5, 2, "gold_l")])
+sam.part("neck", "root", (0, 12.5, -6), (0.5, 0, 0), cubes=[(-2, -5, -2, 4, 6, 4, "gold", {"paint": sam_body})])
+sam.part("head", "neck", (0, -4.5, 0), (-0.5, 0, 0), cubes=[
+    (-2.5, -4, -3.5, 5, 4, 6, "gold", {"paint": sam_head}),
+    (-1, -2.6, -6.5, 2, 2, 3, "beak", {"paint": lambda f, x, y, w, h: "beak_d" if y == h - 1 else None}),
+    (-0.5, -7, -1, 1, 3, 1, "turq", {"paint": crest}),
+    (-0.5, -6, 0.5, 1, 2, 1, "gold_l", {"paint": crest}),
+    (-0.5, -5.5, 1.8, 1, 2, 1, "red", {"paint": crest})])
+sam.part("wing_l", "root", (3.5, 11, -5), (1.42, 0, -0.12), cubes=[(0, 0, -10, 1, 15, 10, "orange", {"paint": sam_wing})])
+sam.part("wing_r", "root", (-3.5, 11, -5), (1.42, 0, 0.12), cubes=[(-1, 0, -10, 1, 15, 10, "orange", {"paint": sam_wing})])
+sam.part("tail", "root", (0, 13.5, 5.5), (-0.2, 0, 0), cubes=[])
+sam.part("plume_c", "tail", (0, 0, 0), cubes=[(-1, 0, 0, 2, 1, 18, "red", {"paint": sam_plume})])
+sam.part("plume_l", "tail", (1, 0, 0), (0, 0.32, 0), cubes=[(-1, 0, 0, 2, 1, 15, "red", {"paint": sam_plume})])
+sam.part("plume_r", "tail", (-1, 0, 0), (0, -0.32, 0), cubes=[(-1, 0, 0, 2, 1, 15, "red", {"paint": sam_plume})])
+sam.part("plume_l2", "tail", (1.5, 0.5, 0), (0.1, 0.62, 0), cubes=[(-1, 0, 0, 2, 1, 11, "red", {"paint": sam_plume})])
+sam.part("plume_r2", "tail", (-1.5, 0.5, 0), (0.1, -0.62, 0), cubes=[(-1, 0, 0, 2, 1, 11, "red", {"paint": sam_plume})])
+sam.part("leg_l", "root", (1.6, 18.5, 1), cubes=[(-0.5, 0, -0.5, 1, 5.5, 1, "leg"), (-1, 5, -1.5, 2, 0.5, 2, "leg")])
+sam.part("leg_r", "root", (-1.6, 18.5, 1), cubes=[(-0.5, 0, -0.5, 1, 5.5, 1, "leg"), (-1, 5, -1.5, 2, 0.5, 2, "leg")])
+sam.write_java("SamurykModel", """
+        this.head.yRot = headYaw;
+        this.head.xRot += headPitch;
+        this.leg_l.visible = state.flying || !state.sitting;
+        this.leg_r.visible = state.flying || !state.sitting;
+        float breathe = Mth.sin(age * 0.1F) * 0.03F;
+        this.tail.xRot += Mth.sin(age * 0.07F) * 0.05F;
+        if (state.flying) {
+            float flap = Mth.sin(age * 0.35F) * 0.6F;
+            this.wing_l.zRot = -1.35F + flap;
+            this.wing_r.zRot = 1.35F - flap;
+            this.wing_l.xRot = 0.0F;
+            this.wing_r.xRot = 0.0F;
+            this.wing_l.z += 10.0F;
+            this.wing_r.z += 10.0F;
+            this.leg_l.xRot = 1.1F;
+            this.leg_r.xRot = 1.1F;
+            this.tail.xRot -= 0.15F;
+            this.neck.xRot += 0.3F;
+            this.head.xRot -= 0.3F;
+        } else {
+            float step = Mth.cos(limbPos * 0.6662F) * 1.0F * limbSpeed;
+            this.leg_l.xRot = step;
+            this.leg_r.xRot = -step;
+            this.wing_l.xRot = 1.42F + breathe;
+            this.wing_r.xRot = 1.42F + breathe;
+            this.wing_l.zRot = -0.12F;
+            this.wing_r.zRot = 0.12F;
+            if (state.sitting) {
+                this.body.y += 3.0F;
+                this.neck.y += 3.0F;
+                this.wing_l.y += 3.0F;
+                this.wing_r.y += 3.0F;
+                this.tail.y += 3.0F;
+            }
+        }""", "Модель Самұрыка — огромной золотой птицы.")
+
 if __name__ == "__main__" and os.environ.get("PREVIEW"):
     import preview
     out = os.environ["PREVIEW"]
-    for m in (kok, tul, ber, arba):
+    for m in (kok, tul, ber, arba, sam):
         for yaw in (35, 215):
             preview.render(m.preview_parts, os.path.join(TEX_DIR, m.name + ".png"),
                            os.path.join(out, "%s_%d.png" % (m.name, yaw)), yaw=yaw,
-                           scale=12 if m.name != "tulpar" else 8)
+                           scale=12 if m.name not in ("tulpar", "samuryk") else 8)
 print("models done")

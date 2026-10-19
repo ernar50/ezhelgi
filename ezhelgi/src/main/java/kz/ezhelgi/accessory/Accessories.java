@@ -123,6 +123,41 @@ public final class Accessories {
         }
     }
 
+    /** Нечисть, которую отгоняет тұмар. */
+    public static boolean isPest(net.minecraft.world.entity.Entity e) {
+        return e instanceof net.minecraft.world.entity.monster.Phantom
+                || e instanceof net.minecraft.world.entity.monster.Silverfish
+                || e instanceof net.minecraft.world.entity.monster.Endermite
+                || e instanceof net.minecraft.world.entity.monster.spider.CaveSpider
+                || e instanceof net.minecraft.world.entity.monster.Vex
+                || e instanceof net.minecraft.world.entity.ambient.Bat
+                || e instanceof kz.ezhelgi.entity.Albasty;
+    }
+
+    private static void repelPests(ServerPlayer player) {
+        // фантомы не прилетают: тұмар даёт спокойный сон
+        player.resetStat(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.TIME_SINCE_REST));
+        net.minecraft.server.level.ServerLevel level = player.level();
+        for (net.minecraft.world.entity.Mob mob : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
+                player.getBoundingBox().inflate(10.0), Accessories::isPest)) {
+            if (mob.getTarget() == player) {
+                mob.setTarget(null);
+            }
+            net.minecraft.world.phys.Vec3 away = mob.position().subtract(player.position());
+            double dist = Math.max(0.5, away.length());
+            if (dist < 6.0) {
+                net.minecraft.world.phys.Vec3 push = away.scale(0.6 / dist);
+                mob.setDeltaMovement(mob.getDeltaMovement().add(push.x, mob.isNoGravity() ? push.y : 0.1, push.z));
+                mob.needsSync = true;
+            }
+            if (mob instanceof net.minecraft.world.entity.PathfinderMob pathfinder) {
+                pathfinder.getNavigation().moveTo(mob.getX() + away.x / dist * 8.0, mob.getY(), mob.getZ() + away.z / dist * 8.0, 1.3);
+            }
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANTED_HIT, mob.getX(), mob.getY() + mob.getBbHeight() * 0.5,
+                    mob.getZ(), 4, 0.2, 0.2, 0.2, 0.1);
+        }
+    }
+
     private static Identifier modifierId(String accessory) {
         return Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "accessory_" + accessory);
     }
@@ -152,6 +187,16 @@ public final class Accessories {
             if (accessory.nightVision()) {
                 player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 300, 0, true, false));
             }
+        }
+        // тұмар: оберег от «досаждателей»
+        boolean tumar = false;
+        for (AccessoryItem accessory : worn) {
+            if ("tumar".equals(accessory.accessoryId())) {
+                tumar = true;
+            }
+        }
+        if (tumar) {
+            repelPests(player);
         }
         // золотая маска на голове: стойкость и ночное зрение
         if (player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(kz.ezhelgi.item.ModItems.ALTYN_BETPERDE.get())) {

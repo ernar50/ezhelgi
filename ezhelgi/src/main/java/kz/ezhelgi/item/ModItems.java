@@ -5,6 +5,7 @@ import kz.ezhelgi.accessory.AccessoryItem;
 import kz.ezhelgi.block.ModBlocks;
 import kz.ezhelgi.entity.ModEntities;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -127,6 +128,46 @@ public final class ModItems {
             p -> new Item(p.stacksTo(1).rarity(Rarity.EPIC).equippable(EquipmentSlot.HEAD)));
     public static final RegistryObject<Item> ARBA = item("arba",
             p -> new ArbaItem(p.stacksTo(1)));
+
+    // ---------- v5: сказочные существа, кобыз, қамшы, тұмар ----------
+    public static final RegistryObject<Item> QOBYZ = item("qobyz",
+            p -> new KobyzItem(p.stacksTo(1).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> QAMSHY = item("qamshy",
+            p -> new QamshyItem(p.sword(ToolMaterial.IRON, 0.0f, -1.6f)));
+    public static final RegistryObject<Item> SYNYQ_QYLYSH = item("synyq_qylysh",
+            p -> new Item(p.stacksTo(1).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> ARUAQ_QYLYSH = item("aruaq_qylysh",
+            p -> new SpiritBladeItem(p.sword(ModMaterials.SAKA_GOLD, 5.5f, -2.3f).rarity(Rarity.EPIC)
+                    .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)));
+    /** Призрачный меч в руке духа (игроку не достаётся). */
+    public static final RegistryObject<Item> ARUAQ_SPECTRAL = item("aruaq_spectral",
+            p -> new Item(p.stacksTo(1)));
+    public static final RegistryObject<Item> ALBASTY_SHASHY = item("albasty_shashy",
+            p -> new Item(p.rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> ZHEZ_TYRNAQ = item("zhez_tyrnaq",
+            p -> new Item(p.rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> TYRNAQ_QANJAR = item("tyrnaq_qanjar",
+            p -> new Item(p.sword(ToolMaterial.COPPER, 3.5f, -1.4f).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> SAMURYK_JUMYRTQASY = item("samuryk_jumyrtqasy",
+            p -> new SamurykEggItem(p.stacksTo(1).rarity(Rarity.EPIC)));
+    public static final RegistryObject<Item> SAMURYK_QAUYRSYN = item("samuryk_qauyrsyn",
+            p -> new FeatherItem(p.stacksTo(16).rarity(Rarity.RARE)));
+    /** Тұмар — оберег: не подпускает фантомов, мелкую нечисть и албасты. */
+    public static final RegistryObject<Item> TUMAR = item("tumar",
+            p -> new AccessoryItem(p.stacksTo(1).rarity(Rarity.RARE), "tumar", null, 0.0,
+                    AttributeModifier.Operation.ADD_VALUE, false));
+    public static final RegistryObject<Item> RUNA_TASY = blockItem("runa_tasy", ModBlocks.RUNA_TASY);
+
+    public static final RegistryObject<Item> ZHEZTYRNAK_SPAWN_EGG = item("zheztyrnak_spawn_egg",
+            p -> new SpawnEggItem(p.spawnEgg(ModEntities.ZHEZTYRNAK.get())));
+    public static final RegistryObject<Item> BATYR_ARUAGY_SPAWN_EGG = item("batyr_aruagy_spawn_egg",
+            p -> new SpawnEggItem(p.spawnEgg(ModEntities.BATYR_ARUAGY.get())));
+    public static final RegistryObject<Item> ALBASTY_SPAWN_EGG = item("albasty_spawn_egg",
+            p -> new SpawnEggItem(p.spawnEgg(ModEntities.ALBASTY.get())));
+    public static final RegistryObject<Item> ZHALMAUYZ_KEMPIR_SPAWN_EGG = item("zhalmauyz_kempir_spawn_egg",
+            p -> new SpawnEggItem(p.spawnEgg(ModEntities.ZHALMAUYZ_KEMPIR.get()).rarity(Rarity.EPIC)));
+    public static final RegistryObject<Item> SAMURYK_SPAWN_EGG = item("samuryk_spawn_egg",
+            p -> new SpawnEggItem(p.spawnEgg(ModEntities.SAMURYK.get()).rarity(Rarity.RARE)));
 
     // ---------- Золотые украшения в зверином стиле (аксессуары) ----------
     public static final RegistryObject<Item> BARYS_ALQASY = accessory("barys_alqasy",

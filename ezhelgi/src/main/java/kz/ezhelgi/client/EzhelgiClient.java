@@ -20,6 +20,10 @@ public final class EzhelgiClient {
     public static final ModelLayerLocation BERKUT_LAYER = layer("berkut");
     public static final ModelLayerLocation HUMANOID_LAYER = layer("humanoid");
     public static final ModelLayerLocation ARBA_LAYER = layer("arba");
+    public static final ModelLayerLocation ZHEZTYRNAK_LAYER = layer("zheztyrnak");
+    public static final ModelLayerLocation ALBASTY_LAYER = layer("albasty");
+    public static final ModelLayerLocation KEMPIR_LAYER = layer("zhalmauyz_kempir");
+    public static final ModelLayerLocation SAMURYK_LAYER = layer("samuryk");
 
     public static void init(BusGroup modBusGroup) {
         EntityRenderersEvent.RegisterLayerDefinitions.BUS.addListener(EzhelgiClient::registerLayers);
@@ -38,6 +42,10 @@ public final class EzhelgiClient {
         event.registerLayerDefinition(BERKUT_LAYER, BerkutModel::createBodyLayer);
         event.registerLayerDefinition(HUMANOID_LAYER, HumanoidMonsterRenderer::createBodyLayer);
         event.registerLayerDefinition(ARBA_LAYER, ArbaModel::createBodyLayer);
+        event.registerLayerDefinition(ZHEZTYRNAK_LAYER, () -> FolkModel.createLayer(17.0f, 1.5f));
+        event.registerLayerDefinition(ALBASTY_LAYER, () -> FolkModel.createLayer(22.0f, 0.0f));
+        event.registerLayerDefinition(KEMPIR_LAYER, () -> FolkModel.createLayer(14.0f, 2.5f));
+        event.registerLayerDefinition(SAMURYK_LAYER, SamurykModel::createBodyLayer);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -52,6 +60,15 @@ public final class EzhelgiClient {
         event.registerEntityRenderer(ModEntities.ALTYN_ADAM.get(), ctx -> new HumanoidMonsterRenderer<>(ctx, "altyn_adam", 1.25f));
         event.registerEntityRenderer(ModEntities.ARBA.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
                 new ArbaModel(ctx.bakeLayer(ARBA_LAYER)), 0.8f, texture("arba"), 1.0f));
+        event.registerEntityRenderer(ModEntities.ZHEZTYRNAK.get(), ctx -> new FolkRenderer<>(ctx, ZHEZTYRNAK_LAYER, false,
+                "zheztyrnak", "zheztyrnak_angry", 0.97f));
+        event.registerEntityRenderer(ModEntities.ALBASTY.get(), ctx -> new FolkRenderer<>(ctx, ALBASTY_LAYER, false,
+                "albasty", "albasty_angry", 1.0f));
+        event.registerEntityRenderer(ModEntities.ZHALMAUYZ_KEMPIR.get(), ctx -> new FolkRenderer<>(ctx, KEMPIR_LAYER, true,
+                "zhalmauyz_kempir", "zhalmauyz_kempir_cast", 1.0f));
+        event.registerEntityRenderer(ModEntities.BATYR_ARUAGY.get(), GhostRenderer::new);
+        event.registerEntityRenderer(ModEntities.SAMURYK.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new SamurykModel(ctx.bakeLayer(SAMURYK_LAYER)), 1.2f, texture("samuryk"), 2.0f));
     }
 
     private static ModelLayerLocation layer(String name) {

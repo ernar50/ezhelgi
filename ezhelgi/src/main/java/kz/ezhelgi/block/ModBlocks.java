@@ -70,6 +70,12 @@ public final class ModBlocks {
     /** Өрнек — чёрно-золотой узорный ковёр. */
     public static final RegistryObject<Block> ORNEK = carpet("ornek", MapColor.COLOR_BLACK);
 
+    // ---------- Руны ----------
+    /** Руна тас — камень с древнетюркскими рунами, светится, пока не пробуждён. */
+    public static final RegistryObject<Block> RUNA_TASY = register("runa_tasy", RuneStoneBlock::new,
+            p -> p.mapColor(MapColor.STONE).strength(3.0f, 9.0f).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(RuneStoneBlock.LIT) ? 9 : 0));
+
     private static RegistryObject<Block> carpet(String name, MapColor color) {
         return register(name, CarpetBlock::new,
                 p -> p.mapColor(color).strength(0.1f).sound(SoundType.WOOL).ignitedByLava());
