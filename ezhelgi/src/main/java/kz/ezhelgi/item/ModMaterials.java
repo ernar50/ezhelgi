@@ -46,6 +46,47 @@ public final class ModMaterials {
             defense(3, 6, 8, 3, 10), 25, SoundEvents.ARMOR_EQUIP_GOLD,
             2.0f, 0.05f, SAKA_GOLD_REPAIRABLE, ALTYN_ADAM_ASSET);
 
+    // ------------------------------------------------------------------ v7: доспехи батыров
+    public static final TagKey<Item> BATYR_REPAIRABLE = TagKey.create(Registries.ITEM,
+            Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "batyr_repairable"));
+    public static final TagKey<Item> EPIC_REPAIRABLE = TagKey.create(Registries.ITEM,
+            Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "epic_repairable"));
+    public static final TagKey<Item> FUR_REPAIRABLE = TagKey.create(Registries.ITEM,
+            Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "fur_repairable"));
+
+    public static ResourceKey<EquipmentAsset> asset(String name) {
+        return ResourceKey.create(EQUIPMENT_ROOT, Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, name));
+    }
+
+    /** Дулыға, батыр шалбары и етігі. */
+    public static final ArmorMaterial BATYR = new ArmorMaterial(18, defense(2, 5, 6, 2, 5), 12,
+            SoundEvents.ARMOR_EQUIP_CHAIN, 0.5f, 0.0f, BATYR_REPAIRABLE, asset("batyr"));
+    /** Кіреуке — лёгкая кольчужная рубаха. */
+    public static final ArmorMaterial KIREUKE = new ArmorMaterial(16, defense(2, 5, 5, 2, 5), 14,
+            SoundEvents.ARMOR_EQUIP_CHAIN, 0.0f, 0.0f, BATYR_REPAIRABLE, asset("kireuke"));
+    /** Көбе сауыт — тяжёлая длинная кольчуга. */
+    public static final ArmorMaterial KOBE = new ArmorMaterial(22, defense(2, 5, 6, 2, 5), 12,
+            SoundEvents.ARMOR_EQUIP_CHAIN, 1.0f, 0.0f, BATYR_REPAIRABLE, asset("kobe_sauyt"));
+    /** Берен сауыт — доспех из лучшей булатной стали. */
+    public static final ArmorMaterial BEREN = new ArmorMaterial(28, defense(2, 5, 7, 2, 6), 15,
+            SoundEvents.ARMOR_EQUIP_IRON, 1.5f, 0.0f, BATYR_REPAIRABLE, asset("beren_sauyt"));
+    /** Шарайна — зерцальный доспех: стальные пластины поверх кольчуги. */
+    public static final ArmorMaterial SHARAINA = new ArmorMaterial(32, defense(2, 5, 8, 2, 6), 14,
+            SoundEvents.ARMOR_EQUIP_IRON, 2.0f, 0.05f, BATYR_REPAIRABLE, asset("sharaina"));
+    /** Джунгарская ламеллярная броня. */
+    public static final ArmorMaterial JUNGAR = new ArmorMaterial(20, defense(2, 5, 6, 2, 5), 10,
+            SoundEvents.ARMOR_EQUIP_IRON, 1.0f, 0.0f, BATYR_REPAIRABLE, asset("jungar_sauyt"));
+    /** Эпические доспехи героев эпоса. */
+    public static final ArmorMaterial QOBYLANDY = new ArmorMaterial(40, defense(3, 6, 8, 3, 11), 20,
+            SoundEvents.ARMOR_EQUIP_NETHERITE, 3.0f, 0.1f, EPIC_REPAIRABLE, asset("qobylandy"));
+    public static final ArmorMaterial ALPAMYS = new ArmorMaterial(40, defense(3, 6, 8, 3, 11), 20,
+            SoundEvents.ARMOR_EQUIP_NETHERITE, 3.0f, 0.1f, EPIC_REPAIRABLE, asset("alpamys"));
+    public static final ArmorMaterial ER_TARGYN = new ArmorMaterial(38, defense(3, 6, 8, 3, 11), 22,
+            SoundEvents.ARMOR_EQUIP_NETHERITE, 2.5f, 0.05f, EPIC_REPAIRABLE, asset("er_targyn"));
+    /** Тымақ — меховая шапка из лисьего меха. */
+    public static final ArmorMaterial TYMAQ = new ArmorMaterial(9, defense(1, 2, 3, 2, 3), 15,
+            SoundEvents.ARMOR_EQUIP_LEATHER, 0.0f, 0.0f, FUR_REPAIRABLE, asset("tymaq"));
+
     private static Map<ArmorType, Integer> defense(int boots, int legs, int chest, int helmet, int body) {
         Map<ArmorType, Integer> map = new EnumMap<>(ArmorType.class);
         map.put(ArmorType.BOOTS, boots);

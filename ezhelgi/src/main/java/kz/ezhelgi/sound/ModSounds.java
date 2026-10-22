@@ -82,6 +82,30 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> KORKYT_KUI = sound("entity.qorqyt_ata.kui");
     public static final RegistryObject<SoundEvent> KORKYT_VANISH = sound("entity.qorqyt_ata.vanish");
 
+    // v7: звуки
+    public static final RegistryObject<SoundEvent> AIDAHAR_ROAR = sound("entity.aidahar.roar");
+    public static final RegistryObject<SoundEvent> AIDAHAR_BITE = sound("entity.aidahar.bite");
+    public static final RegistryObject<SoundEvent> AIDAHAR_FIRE = sound("entity.aidahar.fire");
+    public static final RegistryObject<SoundEvent> AIDAHAR_AMBIENT = sound("entity.aidahar.ambient");
+    public static final RegistryObject<SoundEvent> AIDAHAR_HURT = sound("entity.aidahar.hurt");
+    public static final RegistryObject<SoundEvent> AIDAHAR_DEATH = sound("entity.aidahar.death");
+    public static final RegistryObject<SoundEvent> AKSAKAL_TALK = sound("entity.aqsaqal.talk");
+    public static final RegistryObject<SoundEvent> TOGYZ_MOVE = sound("block.togyz.move");
+    public static final RegistryObject<SoundEvent> SINGING_SAND = sound("block.an_qum.sing");
+    public static final RegistryObject<SoundEvent> PETROGLYPH = sound("block.tanba.found");
+
+    // v7: кюй Курмангазы (20 частей) и пластинка «Адай»
+    public static final java.util.List<RegistryObject<SoundEvent>> KURMANGAZY_KUI = kuiParts();
+    public static final RegistryObject<SoundEvent> MUSIC_DISC_ADAI = sound("music_disc.adai");
+
+    private static java.util.List<RegistryObject<SoundEvent>> kuiParts() {
+        java.util.List<RegistryObject<SoundEvent>> list = new java.util.ArrayList<>();
+        for (int i = 1; i <= 20; i++) {
+            list.add(sound("item.dombyra.kurmangazy." + i));
+        }
+        return java.util.List.copyOf(list);
+    }
+
     private static RegistryObject<SoundEvent> sound(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(
                 Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, name)));

@@ -722,12 +722,14 @@ bar.write_java("BarysModel", """
             this.tail.xRot = 0.2F;
         }""", "Модель барыса (снежного барса) с длинным пушистым хвостом.")
 
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "models_v7.py"), encoding="utf-8").read())
+
 if __name__ == "__main__" and os.environ.get("PREVIEW"):
     import preview
     out = os.environ["PREVIEW"]
-    for m in (kok, tul, ber, arba, sam, sai, bar):
+    for m in (kok, tul, ber, arba, sam, sai, bar) + V7_MODELS:
         for yaw in (35, 215):
             preview.render(m.preview_parts, os.path.join(TEX_DIR, m.name + ".png"),
                            os.path.join(out, "%s_%d.png" % (m.name, yaw)), yaw=yaw,
-                           scale=12 if m.name not in ("tulpar", "samuryk") else 8)
+                           scale=12 if m.name not in ("tulpar", "samuryk", "ayu", "przewalski", "arqar") else 8)
 print("models done")

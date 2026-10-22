@@ -76,6 +76,30 @@ public final class ModBlocks {
             p -> p.mapColor(MapColor.STONE).strength(3.0f, 9.0f).requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(RuneStoneBlock.LIT) ? 9 : 0));
 
+    // ---------- v7: тоғыз құмалақ, флаги, петроглифы, поющий песок ----------
+    public static final RegistryObject<Block> TOGYZ_QUMALAQ = register("togyz_qumalaq", kz.ezhelgi.block.togyz.TogyzBlock::new,
+            p -> p.mapColor(MapColor.WOOD).strength(1.5f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
+
+    public static final String[] FLAGS = {"tu_qazaqstan", "tu_alash", "tu_handyq", "tu_uly_juz", "tu_orta_juz", "tu_kishi_juz"};
+    public static final RegistryObject<Block> TU_QAZAQSTAN = flag("tu_qazaqstan");
+    public static final RegistryObject<Block> TU_ALASH = flag("tu_alash");
+    public static final RegistryObject<Block> TU_HANDYQ = flag("tu_handyq");
+    public static final RegistryObject<Block> TU_ULY_JUZ = flag("tu_uly_juz");
+    public static final RegistryObject<Block> TU_ORTA_JUZ = flag("tu_orta_juz");
+    public static final RegistryObject<Block> TU_KISHI_JUZ = flag("tu_kishi_juz");
+
+    /** Таңба тас — скала с петроглифами Тамгалы. */
+    public static final RegistryObject<Block> TANBA_TAS = register("tanba_tas", TanbaTasBlock::new,
+            p -> p.mapColor(MapColor.TERRACOTTA_BROWN).strength(2.5f, 8.0f).requiresCorrectToolForDrops().sound(SoundType.STONE));
+    /** Ән құм — поющий песок. */
+    public static final RegistryObject<Block> AN_QUM = register("an_qum", AnQumBlock::new,
+            p -> p.mapColor(MapColor.SAND).strength(0.5f).sound(SoundType.SAND));
+
+    private static RegistryObject<Block> flag(String name) {
+        return register(name, TuBlock::new,
+                p -> p.mapColor(MapColor.WOOD).strength(1.0f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
+    }
+
     private static RegistryObject<Block> carpet(String name, MapColor color) {
         return register(name, CarpetBlock::new,
                 p -> p.mapColor(color).strength(0.1f).sound(SoundType.WOOL).ignitedByLava());

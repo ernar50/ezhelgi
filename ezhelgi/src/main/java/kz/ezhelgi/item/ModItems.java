@@ -217,6 +217,126 @@ public final class ModItems {
     public static final RegistryObject<Item> SHOQAN_SPAWN_EGG = egg("shoqan", () -> ModEntities.SHOQAN.get());
     public static final RegistryObject<Item> AL_FARABI_SPAWN_EGG = egg("al_farabi", () -> ModEntities.AL_FARABI.get());
 
+    // ---------- v7: доспехи батыров ----------
+    public static final RegistryObject<Item> DULYGA = armor("dulyga", ModMaterials.BATYR, ArmorType.HELMET, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> KIREUKE = armor("kireuke", ModMaterials.KIREUKE, ArmorType.CHESTPLATE, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> KOBE_SAUYT = armor("kobe_sauyt", ModMaterials.KOBE, ArmorType.CHESTPLATE, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> BEREN_SAUYT = armor("beren_sauyt", ModMaterials.BEREN, ArmorType.CHESTPLATE, Rarity.RARE);
+    public static final RegistryObject<Item> SHARAINA = armor("sharaina", ModMaterials.SHARAINA, ArmorType.CHESTPLATE, Rarity.RARE);
+    public static final RegistryObject<Item> BATYR_SHALBAR = armor("batyr_shalbar", ModMaterials.BATYR, ArmorType.LEGGINGS, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> BATYR_ETIK = armor("batyr_etik", ModMaterials.BATYR, ArmorType.BOOTS, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> JUNGAR_DULYGA = armor("jungar_dulyga", ModMaterials.JUNGAR, ArmorType.HELMET, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> JUNGAR_SAUYT = armor("jungar_sauyt", ModMaterials.JUNGAR, ArmorType.CHESTPLATE, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> JUNGAR_SHALBAR = armor("jungar_shalbar", ModMaterials.JUNGAR, ArmorType.LEGGINGS, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> JUNGAR_ETIK = armor("jungar_etik", ModMaterials.JUNGAR, ArmorType.BOOTS, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> TYMAQ = armor("tymaq", ModMaterials.TYMAQ, ArmorType.HELMET, Rarity.COMMON);
+
+    public static final RegistryObject<Item> QOBYLANDY_DULYGA = epic("qobylandy", "dulyga", ModMaterials.QOBYLANDY, ArmorType.HELMET);
+    public static final RegistryObject<Item> QOBYLANDY_SAUYT = epic("qobylandy", "sauyt", ModMaterials.QOBYLANDY, ArmorType.CHESTPLATE);
+    public static final RegistryObject<Item> QOBYLANDY_SHALBAR = epic("qobylandy", "shalbar", ModMaterials.QOBYLANDY, ArmorType.LEGGINGS);
+    public static final RegistryObject<Item> QOBYLANDY_ETIK = epic("qobylandy", "etik", ModMaterials.QOBYLANDY, ArmorType.BOOTS);
+    public static final RegistryObject<Item> ALPAMYS_DULYGA = epic("alpamys", "dulyga", ModMaterials.ALPAMYS, ArmorType.HELMET);
+    public static final RegistryObject<Item> ALPAMYS_SAUYT = epic("alpamys", "sauyt", ModMaterials.ALPAMYS, ArmorType.CHESTPLATE);
+    public static final RegistryObject<Item> ALPAMYS_SHALBAR = epic("alpamys", "shalbar", ModMaterials.ALPAMYS, ArmorType.LEGGINGS);
+    public static final RegistryObject<Item> ALPAMYS_ETIK = epic("alpamys", "etik", ModMaterials.ALPAMYS, ArmorType.BOOTS);
+    public static final RegistryObject<Item> ER_TARGYN_DULYGA = epic("er_targyn", "dulyga", ModMaterials.ER_TARGYN, ArmorType.HELMET);
+    public static final RegistryObject<Item> ER_TARGYN_SAUYT = epic("er_targyn", "sauyt", ModMaterials.ER_TARGYN, ArmorType.CHESTPLATE);
+    public static final RegistryObject<Item> ER_TARGYN_SHALBAR = epic("er_targyn", "shalbar", ModMaterials.ER_TARGYN, ArmorType.LEGGINGS);
+    public static final RegistryObject<Item> ER_TARGYN_ETIK = epic("er_targyn", "etik", ModMaterials.ER_TARGYN, ArmorType.BOOTS);
+
+    /** Қалқан — круглый щит батыра. */
+    public static final RegistryObject<Item> QALQAN = shield("qalqan", 420, ModMaterials.BATYR_REPAIRABLE, Rarity.UNCOMMON, 0.25f);
+    /** Щит из чешуи айдахара. */
+    public static final RegistryObject<Item> AIDAHAR_QALQANY = shield("aidahar_qalqany", 1200, ModMaterials.EPIC_REPAIRABLE, Rarity.EPIC, 0.15f);
+
+    // ---------- v7: отделка доспехов (шаблоны кузнечного стола) ----------
+    public static final String[] TRIMS = {"qoshqar_muiz", "tuie_taban", "qus_qanaty", "synar_muiz", "tumarsha"};
+    public static final RegistryObject<Item> QOSHQAR_MUIZ_TEMPLATE = template("qoshqar_muiz", Rarity.UNCOMMON);
+    public static final RegistryObject<Item> TUIE_TABAN_TEMPLATE = template("tuie_taban", Rarity.UNCOMMON);
+    public static final RegistryObject<Item> QUS_QANATY_TEMPLATE = template("qus_qanaty", Rarity.RARE);
+    public static final RegistryObject<Item> SYNAR_MUIZ_TEMPLATE = template("synar_muiz", Rarity.UNCOMMON);
+    public static final RegistryObject<Item> TUMARSHA_TEMPLATE = template("tumarsha", Rarity.RARE);
+
+    // ---------- v7: музыка, добыча, тоғыз құмалақ ----------
+    public static final RegistryObject<Item> MUSIC_DISC_ADAI = item("music_disc_adai",
+            p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(net.minecraft.resources.ResourceKey.create(
+                    net.minecraft.core.registries.Registries.JUKEBOX_SONG,
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "adai")))));
+    public static final RegistryObject<Item> AIDAHAR_QABYRSHAGY = item("aidahar_qabyrshagy",
+            p -> new Item(p.rarity(Rarity.EPIC).fireResistant()));
+    public static final RegistryObject<Item> ARQAR_MUIIZI = item("arqar_muiizi",
+            p -> new Item(p.rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> MUIIZ_SADAQ = item("muiiz_sadaq",
+            p -> new BowItem(p.durability(900).rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> TULKI_TERISI = item("tulki_terisi",
+            p -> new Item(p.rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> AN_ETI = item("an_eti",
+            p -> new Item(p.food(ModFoods.AN_ETI, ModFoods.MEAT_EAT)));
+    public static final RegistryObject<Item> PISKEN_AN_ETI = item("pisken_an_eti",
+            p -> new Item(p.food(ModFoods.PISKEN_AN_ETI, ModFoods.MEAT_EAT)));
+    public static final RegistryObject<Item> QUMALAQ = item("qumalaq", p -> new Item(p));
+    public static final RegistryObject<Item> QUMALAQ_TUZDYK = item("qumalaq_tuzdyk", p -> new Item(p));
+    /** Ою-өрнек — трафарет для ткацкого станка: флаги и тамги трёх жузов на знамёнах. */
+    public static final RegistryObject<Item> OIU_BANNER_PATTERN = item("oiu_banner_pattern",
+            p -> new Item(p.stacksTo(1).rarity(Rarity.UNCOMMON).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS,
+                    ctx -> ctx.getOrThrow(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BANNER_PATTERN,
+                            net.minecraft.resources.Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "pattern_item/oiu"))))));
+
+    public static final RegistryObject<Item> TOGYZ_QUMALAQ = blockItem("togyz_qumalaq", ModBlocks.TOGYZ_QUMALAQ);
+    public static final RegistryObject<Item> TU_QAZAQSTAN = blockItem("tu_qazaqstan", ModBlocks.TU_QAZAQSTAN);
+    public static final RegistryObject<Item> TU_ALASH = blockItem("tu_alash", ModBlocks.TU_ALASH);
+    public static final RegistryObject<Item> TU_HANDYQ = blockItem("tu_handyq", ModBlocks.TU_HANDYQ);
+    public static final RegistryObject<Item> TU_ULY_JUZ = blockItem("tu_uly_juz", ModBlocks.TU_ULY_JUZ);
+    public static final RegistryObject<Item> TU_ORTA_JUZ = blockItem("tu_orta_juz", ModBlocks.TU_ORTA_JUZ);
+    public static final RegistryObject<Item> TU_KISHI_JUZ = blockItem("tu_kishi_juz", ModBlocks.TU_KISHI_JUZ);
+    public static final RegistryObject<Item> TANBA_TAS = blockItem("tanba_tas", ModBlocks.TANBA_TAS);
+    public static final RegistryObject<Item> AN_QUM = blockItem("an_qum", ModBlocks.AN_QUM);
+
+    public static final RegistryObject<Item> ARQAR_SPAWN_EGG = egg("arqar", () -> ModEntities.ARQAR.get());
+    public static final RegistryObject<Item> QARAQUIRYQ_SPAWN_EGG = egg("qaraquiryq", () -> ModEntities.QARAQUIRYQ.get());
+    public static final RegistryObject<Item> TAU_TEKE_SPAWN_EGG = egg("tau_teke", () -> ModEntities.TAU_TEKE.get());
+    public static final RegistryObject<Item> AYU_SPAWN_EGG = egg("ayu", () -> ModEntities.AYU.get());
+    public static final RegistryObject<Item> MANUL_SPAWN_EGG = egg("manul", () -> ModEntities.MANUL.get());
+    public static final RegistryObject<Item> QARSAQ_SPAWN_EGG = egg("qarsaq", () -> ModEntities.QARSAQ.get());
+    public static final RegistryObject<Item> ITBALYQ_SPAWN_EGG = egg("itbalyq", () -> ModEntities.ITBALYQ.get());
+    public static final RegistryObject<Item> QOSAYAQ_SPAWN_EGG = egg("qosayaq", () -> ModEntities.QOSAYAQ.get());
+    public static final RegistryObject<Item> PRZEWALSKI_SPAWN_EGG = egg("przewalski", () -> ModEntities.PRZEWALSKI.get());
+    public static final RegistryObject<Item> QARAQUS_SPAWN_EGG = egg("qaraqus", () -> ModEntities.QARAQUS.get());
+    public static final RegistryObject<Item> AIDAHAR_SPAWN_EGG = egg("aidahar", () -> ModEntities.AIDAHAR.get());
+    public static final RegistryObject<Item> MYSTAN_KEMPIR_SPAWN_EGG = egg("mystan_kempir", () -> ModEntities.MYSTAN_KEMPIR.get());
+    public static final RegistryObject<Item> AQSAQAL_SPAWN_EGG = egg("aqsaqal", () -> ModEntities.AQSAQAL.get());
+    public static final RegistryObject<Item> KUISHI_SPAWN_EGG = egg("kuishi", () -> ModEntities.KUISHI.get());
+    public static final RegistryObject<Item> KERUENSHI_SPAWN_EGG = egg("keruenshi", () -> ModEntities.KERUENSHI.get());
+
+    private static RegistryObject<Item> armor(String name, net.minecraft.world.item.equipment.ArmorMaterial material,
+                                              ArmorType type, Rarity rarity) {
+        return item(name, p -> new Item(p.humanoidArmor(material, type).rarity(rarity)));
+    }
+
+    private static RegistryObject<Item> epic(String set, String part, net.minecraft.world.item.equipment.ArmorMaterial material,
+                                             ArmorType type) {
+        return item(set + "_" + part, p -> new EpicArmorItem(p.humanoidArmor(material, type).rarity(Rarity.EPIC).fireResistant(), set));
+    }
+
+    private static RegistryObject<Item> shield(String name, int durability, net.minecraft.tags.TagKey<Item> repair,
+                                               Rarity rarity, float blockDelay) {
+        return item(name, p -> new Item(p.durability(durability).repairable(repair).rarity(rarity)
+                .equippableUnswappable(EquipmentSlot.OFFHAND)
+                .delayedComponent(DataComponents.BLOCKS_ATTACKS, ctx -> new net.minecraft.world.item.component.BlocksAttacks(
+                        blockDelay, 1.0f,
+                        List.of(new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(90.0f, java.util.Optional.empty(), 0.0f, 1.0f)),
+                        new net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction(3.0f, 1.0f, 1.0f),
+                        java.util.Optional.of(ctx.getOrThrow(net.minecraft.tags.DamageTypeTags.BYPASSES_SHIELD)),
+                        java.util.Optional.of(net.minecraft.sounds.SoundEvents.SHIELD_BLOCK),
+                        java.util.Optional.of(net.minecraft.sounds.SoundEvents.SHIELD_BREAK)))
+                .component(DataComponents.BREAK_SOUND, net.minecraft.sounds.SoundEvents.SHIELD_BREAK)));
+    }
+
+    private static RegistryObject<Item> template(String pattern, Rarity rarity) {
+        return item(pattern + "_armor_trim_smithing_template",
+                p -> net.minecraft.world.item.SmithingTemplateItem.createArmorTrimTemplate(p.rarity(rarity)));
+    }
+
     private static RegistryObject<Item> egg(String name, Supplier<? extends net.minecraft.world.entity.EntityType<?>> type) {
         return item(name + "_spawn_egg", p -> new SpawnEggItem(p.spawnEgg(type.get())));
     }

@@ -49,6 +49,8 @@ public class FolkRenderer<T extends Monster> extends HumanoidMobRenderer<T, Folk
             state.revealed = z.isRevealed();
         } else if (entity instanceof Albasty a) {
             state.revealed = a.getTarget() != null || a.isAggressive();
+        } else if (entity instanceof kz.ezhelgi.entity.MystanKempir m) {
+            state.revealed = m.isAggressive();
         } else if (entity instanceof ZhalmauyzKempir k) {
             state.casting = k.castingSpell();
         }

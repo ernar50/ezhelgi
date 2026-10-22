@@ -26,6 +26,18 @@ public final class EzhelgiClient {
     public static final ModelLayerLocation SAMURYK_LAYER = layer("samuryk");
     public static final ModelLayerLocation SAIGA_LAYER = layer("aqboken");
     public static final ModelLayerLocation BARYS_LAYER = layer("barys");
+    public static final ModelLayerLocation ARQAR_LAYER = layer("arqar");
+    public static final ModelLayerLocation QARAQUIRYQ_LAYER = layer("qaraquiryq");
+    public static final ModelLayerLocation TAU_TEKE_LAYER = layer("tau_teke");
+    public static final ModelLayerLocation AYU_LAYER = layer("ayu");
+    public static final ModelLayerLocation MANUL_LAYER = layer("manul");
+    public static final ModelLayerLocation QARSAQ_LAYER = layer("qarsaq");
+    public static final ModelLayerLocation ITBALYQ_LAYER = layer("itbalyq");
+    public static final ModelLayerLocation QOSAYAQ_LAYER = layer("qosayaq");
+    public static final ModelLayerLocation PRZEWALSKI_LAYER = layer("przewalski");
+    public static final ModelLayerLocation QARAQUS_LAYER = layer("qaraqus");
+    public static final ModelLayerLocation AIDAHAR_LAYER = layer("aidahar");
+    public static final ModelLayerLocation MYSTAN_LAYER = layer("mystan_kempir");
 
     public static void init(BusGroup modBusGroup) {
         EntityRenderersEvent.RegisterLayerDefinitions.BUS.addListener(EzhelgiClient::registerLayers);
@@ -50,6 +62,18 @@ public final class EzhelgiClient {
         event.registerLayerDefinition(SAMURYK_LAYER, SamurykModel::createBodyLayer);
         event.registerLayerDefinition(SAIGA_LAYER, SaigaModel::createBodyLayer);
         event.registerLayerDefinition(BARYS_LAYER, BarysModel::createBodyLayer);
+        event.registerLayerDefinition(ARQAR_LAYER, ArqarModel::createBodyLayer);
+        event.registerLayerDefinition(QARAQUIRYQ_LAYER, QaraquiryqModel::createBodyLayer);
+        event.registerLayerDefinition(TAU_TEKE_LAYER, TauTekeModel::createBodyLayer);
+        event.registerLayerDefinition(AYU_LAYER, AyuModel::createBodyLayer);
+        event.registerLayerDefinition(MANUL_LAYER, ManulModel::createBodyLayer);
+        event.registerLayerDefinition(QARSAQ_LAYER, QarsaqModel::createBodyLayer);
+        event.registerLayerDefinition(ITBALYQ_LAYER, ItbalyqModel::createBodyLayer);
+        event.registerLayerDefinition(QOSAYAQ_LAYER, QosayaqModel::createBodyLayer);
+        event.registerLayerDefinition(PRZEWALSKI_LAYER, PrzewalskiModel::createBodyLayer);
+        event.registerLayerDefinition(QARAQUS_LAYER, QaraqusModel::createBodyLayer);
+        event.registerLayerDefinition(AIDAHAR_LAYER, AidaharModel::createBodyLayer);
+        event.registerLayerDefinition(MYSTAN_LAYER, () -> FolkModel.createLayer(18.0f, 1.0f));
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -83,12 +107,44 @@ public final class EzhelgiClient {
         event.registerEntityRenderer(ModEntities.AUYLDAS.get(), ctx -> new NpcRenderer<>(ctx,
                 (kz.ezhelgi.entity.SteppeVillager e) -> "auyldas/auyldas_" + e.variant(), 0.95f, false));
         event.registerEntityRenderer(ModEntities.ABAI.get(), ctx -> NpcRenderer.fixed(ctx, "abai", 0.97f, false));
+        event.registerEntityRenderer(ModEntities.AQSAQAL.get(), ctx -> NpcRenderer.fixed(ctx, "aqsaqal", 0.95f, false));
+        event.registerEntityRenderer(ModEntities.KUISHI.get(), ctx -> new NpcRenderer<>(ctx,
+                (kz.ezhelgi.entity.SteppeVillager e) -> "kuishi_" + (e.variant() % 3), 0.95f, false));
+        event.registerEntityRenderer(ModEntities.KERUENSHI.get(), ctx -> new NpcRenderer<>(ctx,
+                (kz.ezhelgi.entity.SteppeVillager e) -> "keruenshi_" + (e.variant() % 2), 0.97f, false));
+        event.registerBlockEntityRenderer(kz.ezhelgi.block.ModBlockEntities.TOGYZ.get(), TogyzRenderer::new);
         event.registerEntityRenderer(ModEntities.SHOQAN.get(), ctx -> NpcRenderer.fixed(ctx, "shoqan", 0.97f, false));
         event.registerEntityRenderer(ModEntities.AL_FARABI.get(), ctx -> NpcRenderer.fixed(ctx, "al_farabi", 0.97f, false));
         event.registerEntityRenderer(ModEntities.SAIGA.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
                 new SaigaModel(ctx.bakeLayer(SAIGA_LAYER)), 0.5f, texture("aqboken"), 1.0f));
         event.registerEntityRenderer(ModEntities.BARYS.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
                 new BarysModel(ctx.bakeLayer(BARYS_LAYER)), 0.55f, texture("barys"), 1.0f));
+        // v7
+        event.registerEntityRenderer(ModEntities.ARQAR.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new ArqarModel(ctx.bakeLayer(ARQAR_LAYER)), 0.7f, texture("arqar"), 1.0f));
+        event.registerEntityRenderer(ModEntities.QARAQUIRYQ.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new QaraquiryqModel(ctx.bakeLayer(QARAQUIRYQ_LAYER)), 0.45f, texture("qaraquiryq"), 1.0f));
+        event.registerEntityRenderer(ModEntities.TAU_TEKE.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new TauTekeModel(ctx.bakeLayer(TAU_TEKE_LAYER)), 0.6f, texture("tau_teke"), 1.0f));
+        event.registerEntityRenderer(ModEntities.AYU.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new AyuModel(ctx.bakeLayer(AYU_LAYER)), 1.0f, texture("ayu"), 1.0f));
+        event.registerEntityRenderer(ModEntities.MANUL.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new ManulModel(ctx.bakeLayer(MANUL_LAYER)), 0.35f, texture("manul"), 1.0f));
+        event.registerEntityRenderer(ModEntities.QARSAQ.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new QarsaqModel(ctx.bakeLayer(QARSAQ_LAYER)), 0.3f, texture("qarsaq"), 1.0f));
+        event.registerEntityRenderer(ModEntities.ITBALYQ.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new ItbalyqModel(ctx.bakeLayer(ITBALYQ_LAYER)), 0.5f, texture("itbalyq"), 1.0f));
+        event.registerEntityRenderer(ModEntities.QOSAYAQ.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new QosayaqModel(ctx.bakeLayer(QOSAYAQ_LAYER)), 0.2f, texture("qosayaq"), 1.0f));
+        event.registerEntityRenderer(ModEntities.PRZEWALSKI.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new PrzewalskiModel(ctx.bakeLayer(PRZEWALSKI_LAYER)), 0.75f, texture("przewalski"), 1.0f));
+        event.registerEntityRenderer(ModEntities.QARAQUS.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new QaraqusModel(ctx.bakeLayer(QARAQUS_LAYER)), 0.5f, texture("qaraqus"), 1.5f));
+        event.registerEntityRenderer(ModEntities.AIDAHAR.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new AidaharModel(ctx.bakeLayer(AIDAHAR_LAYER)), 2.0f, texture("aidahar"), 2.6f));
+        event.registerEntityRenderer(ModEntities.MYSTAN_KEMPIR.get(), ctx -> new FolkRenderer<>(ctx, MYSTAN_LAYER, false,
+                "mystan_kempir", "mystan_kempir_angry", 1.0f));
+        event.registerEntityRenderer(ModEntities.MYSTAN_TULKI.get(), net.minecraft.client.renderer.entity.FoxRenderer::new);
     }
 
     private static ModelLayerLocation layer(String name) {

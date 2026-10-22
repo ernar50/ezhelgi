@@ -2042,6 +2042,8 @@ if __name__ == "__main__":
     v5_assets.run(sys.modules[__name__])
     import v6_assets
     v6_assets.run(sys.modules[__name__])
+    import v7_assets
+    v7_assets.run(sys.modules[__name__])
     unlock_recipes()
     lang()
     print("assets done")

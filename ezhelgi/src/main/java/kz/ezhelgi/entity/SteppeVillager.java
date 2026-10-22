@@ -71,11 +71,19 @@ import java.util.function.Supplier;
  * В аулах иногда встречаются великие люди: Абай, Шоқан Уәлиханов и Әл-Фараби.
  */
 public class SteppeVillager extends AbstractVillager {
-    public enum Kind { COMMON, ABAI, SHOQAN, FARABI }
+    public enum Kind { COMMON, ABAI, SHOQAN, FARABI, AQSAQAL, KUISHI, KERUENSHI }
 
     public static final int VARIANTS = 20;
     private static final EntityDataAccessor<Integer> VARIANT =
             SynchedEntityData.defineId(SteppeVillager.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> PLAYING =
+            SynchedEntityData.defineId(SteppeVillager.class, EntityDataSerializers.BOOLEAN);
+    /** Кюйши играет кюй (8,5 с), потом отдыхает. */
+    private int playTicks;
+    private int restTicks = 200;
+    private int kuiPart;
+    /** Цель путешествия каравана. */
+    private net.minecraft.core.BlockPos travelTarget;
 
     private boolean maybeNotable;
     private boolean prepared;
@@ -96,6 +104,9 @@ public class SteppeVillager extends AbstractVillager {
         if (t == ModEntities.ABAI.get()) return Kind.ABAI;
         if (t == ModEntities.SHOQAN.get()) return Kind.SHOQAN;
         if (t == ModEntities.AL_FARABI.get()) return Kind.FARABI;
+        if (t == ModEntities.AQSAQAL.get()) return Kind.AQSAQAL;
+        if (t == ModEntities.KUISHI.get()) return Kind.KUISHI;
+        if (t == ModEntities.KERUENSHI.get()) return Kind.KERUENSHI;
         return Kind.COMMON;
     }
 
@@ -107,6 +118,7 @@ public class SteppeVillager extends AbstractVillager {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(VARIANT, 0);
+        builder.define(PLAYING, false);
     }
 
     @Override
@@ -123,6 +135,7 @@ public class SteppeVillager extends AbstractVillager {
         this.goalSelector.addGoal(1, new AvoidEntityGoal<>(this, Monster.class, 8.0f, 0.5, 0.6));
         this.goalSelector.addGoal(1, new PanicGoal(this, 0.6));
         this.goalSelector.addGoal(1, new LookAtTradingPlayerGoal(this));
+        this.goalSelector.addGoal(3, new CaravanTravelGoal(this));
         this.goalSelector.addGoal(4, new MoveTowardsRestrictionGoal(this, 0.4));
         this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.35));
         this.goalSelector.addGoal(9, new InteractGoal(this, Player.class, 3.0f, 1.0f));
@@ -135,12 +148,25 @@ public class SteppeVillager extends AbstractVillager {
         if (!(this.level() instanceof ServerLevel level)) {
             return;
         }
+        if (this.isBaby() && this.getAge() > -2000) {
+            this.setAge(-24000); // дети аула не взрослеют
+        }
+        if (this.kind() == Kind.KUISHI) {
+            tickMusic(level);
+        }
         if (!this.prepared) {
             this.prepared = true;
-            if (!this.hasHome()) {
-                this.setHomeTo(this.blockPosition(), 22);
+            if (!this.hasHome() && this.kind() != Kind.KERUENSHI) {
+                this.setHomeTo(this.blockPosition(), this.kind() == Kind.KUISHI || this.kind() == Kind.AQSAQAL ? 12 : 22);
             }
-            if (this.kind() == Kind.COMMON && this.variant() % 4 == 1) {
+            if (this.kind() == Kind.KUISHI) {
+                this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(ModItems.DOMBYRA.get()));
+                this.setDropChance(EquipmentSlot.MAINHAND, 0.0f);
+            }
+            if (this.kind() == Kind.KERUENSHI) {
+                spawnCaravan(level);
+            }
+            if (this.kind() == Kind.COMMON && this.variant() % 4 == 1 && !this.isBaby()) {
                 // у некоторых в руках қамшы
                 this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(ModItems.QAMSHY.get()));
                 this.setDropChance(EquipmentSlot.MAINHAND, 0.0f);
@@ -185,6 +211,97 @@ public class SteppeVillager extends AbstractVillager {
             this.openTradingScreen(player, this.getDisplayName(), 1);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    // ------------------------------------------------------------------ кюйши
+    public boolean isPlaying() {
+        return this.entityData.get(PLAYING);
+    }
+
+    /** Кюйши играет у огня: днём изредка, вечером и ночью — почти без перерыва, если рядом люди. */
+    private void tickMusic(ServerLevel level) {
+        if (this.playTicks > 0) {
+            this.playTicks--;
+            if (this.playTicks % 20 == 0) {
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.NOTE, this.getX(), this.getY() + 2.2, this.getZ(),
+                        1, 0.3, 0.1, 0.3, this.getRandom().nextDouble());
+            }
+            if (this.playTicks == 0) {
+                this.entityData.set(PLAYING, false);
+                long time = level.getOverworldClockTime() % 24000L;
+                boolean evening = level.isDarkOutside() || time > 11000L;
+                this.restTicks = evening ? 20 + this.getRandom().nextInt(60) : 400 + this.getRandom().nextInt(800);
+            }
+            return;
+        }
+        if (--this.restTicks > 0) return;
+        Player near = level.getNearestPlayer(this, 24.0);
+        if (near == null || this.isTrading() || this.isBaby()) {
+            this.restTicks = 100;
+            return;
+        }
+        this.getNavigation().stop();
+        this.getLookControl().setLookAt(near);
+        List<net.minecraftforge.registries.RegistryObject<SoundEvent>> parts = kz.ezhelgi.sound.ModSounds.KURMANGAZY_KUI;
+        SoundEvent sound = parts.get(this.kuiPart % parts.size()).get();
+        this.kuiPart = (this.kuiPart + 1) % parts.size();
+        level.playSound(null, this.getX(), this.getY(), this.getZ(), sound, net.minecraft.sounds.SoundSource.NEUTRAL, 1.2f, 1.0f);
+        this.playTicks = 170;
+        this.entityData.set(PLAYING, true);
+    }
+
+    // ------------------------------------------------------------------ керуенші (караван)
+    private void spawnCaravan(ServerLevel level) {
+        int n = 2 + this.getRandom().nextInt(2);
+        net.minecraft.world.entity.Entity leader = this;
+        for (int i = 0; i < n; i++) {
+            net.minecraft.world.entity.animal.camel.Camel camel = net.minecraft.world.entity.EntityTypes.CAMEL.create(level, EntitySpawnReason.EVENT);
+            if (camel == null) return;
+            camel.snapTo(this.getX() - this.getLookAngle().x * (2.5 * (i + 1)), this.getY(), this.getZ() - this.getLookAngle().z * (2.5 * (i + 1)));
+            camel.setPersistenceRequired();
+            if (i == 0) {
+                camel.setItemSlot(EquipmentSlot.SADDLE, new ItemStack(Items.SADDLE));
+            }
+            level.addFreshEntity(camel);
+            // верблюды идут цепочкой: каждый привязан к предыдущему
+            camel.setLeashedTo(leader, true);
+            leader = camel;
+        }
+    }
+
+    /** Караван медленно идёт по Шёлковому пути от одной далёкой точки к другой. */
+    static class CaravanTravelGoal extends net.minecraft.world.entity.ai.goal.Goal {
+        private final SteppeVillager mob;
+        private int cooldown;
+
+        CaravanTravelGoal(SteppeVillager mob) {
+            this.mob = mob;
+            this.setFlags(java.util.EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (this.mob.kind() != Kind.KERUENSHI || this.mob.isTrading() || --this.cooldown > 0) return false;
+            this.cooldown = 60;
+            return true;
+        }
+
+        @Override
+        public void start() {
+            net.minecraft.core.BlockPos pos = this.mob.blockPosition();
+            if (this.mob.travelTarget == null || this.mob.travelTarget.closerThan(pos, 12)) {
+                double a = this.mob.getRandom().nextDouble() * Math.PI * 2;
+                this.mob.travelTarget = pos.offset((int) (Math.cos(a) * 300), 0, (int) (Math.sin(a) * 300));
+            }
+            net.minecraft.world.phys.Vec3 dir = net.minecraft.world.phys.Vec3.atCenterOf(this.mob.travelTarget)
+                    .subtract(this.mob.position()).multiply(1, 0, 1).normalize().scale(18);
+            this.mob.getNavigation().moveTo(this.mob.getX() + dir.x, this.mob.getY(), this.mob.getZ() + dir.z, 0.42);
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return !this.mob.getNavigation().isDone() && !this.mob.isTrading();
+        }
     }
 
     @Override
@@ -277,6 +394,39 @@ public class SteppeVillager extends AbstractVillager {
                     }
                 }
                 fixed.add(buy(ModItems.QOLJAZBA.get(), 1, 3));
+            }
+            case AQSAQAL -> {
+            }
+            case KUISHI -> {
+                fixed.add(sell(3, ModItems.DOMBYRA, 1));
+                fixed.add(sell(4, ModItems.QOBYZ, 1));
+                fixed.add(sell(6, ModItems.MUSIC_DISC_ADAI, 1));
+                fixed.add(sell(2, ModItems.TOGYZ_QUMALAQ, 1));
+                fixed.add(sell(3, ModItems.KIELI_QYL, 1));
+                fixed.add(buy(Items.STRING, 12, 1));
+                fixed.add(buy(Items.NOTE_BLOCK, 2, 1));
+            }
+            case KERUENSHI -> {
+                pool.add(sell(1, Items.SUGAR, 12));
+                pool.add(sell(1, Items.COCOA_BEANS, 8));
+                pool.add(sell(2, Items.AMETHYST_SHARD, 8));
+                pool.add(sell(1, Items.GLASS, 12));
+                pool.add(sell(1, Items.PAPER, 16));
+                pool.add(sell(2, Items.LAPIS_LAZULI, 12));
+                pool.add(sell(1, ModItems.SYRMAK, 4));
+                pool.add(sell(1, ModItems.KOK_SYRMAK, 4));
+                pool.add(sell(1, ModItems.ORNEK, 4));
+                pool.add(sell(3, Items.SPYGLASS, 1));
+                pool.add(sell(4, ModItems.OIU_BANNER_PATTERN, 1));
+                pool.add(sell(2, ModItems.TU_QAZAQSTAN, 1));
+                pool.add(sell(2, ModItems.TU_ALASH, 1));
+                pool.add(sell(2, ModItems.TU_HANDYQ, 1));
+                pool.add(sell(8, ModItems.QOSHQAR_MUIZ_TEMPLATE, 1));
+                pool.add(sell(8, ModItems.QUS_QANATY_TEMPLATE, 1));
+                pool.add(sell(5, ModItems.QALQAN, 1));
+                pool.add(buy(Items.EMERALD, 2, 1));
+                pool.add(buy(ModItems.OTYRAR_TENGESI.get(), 2, 1));
+                pool.add(buy(Items.GOLD_INGOT, 4, 1));
             }
             default -> {
                 switch (this.variant() % 5) {
@@ -394,6 +544,7 @@ public class SteppeVillager extends AbstractVillager {
 
     @Override
     public float getVoicePitch() {
+        if (this.isBaby()) return 1.45f + (this.variant() % 3) * 0.1f;
         return this.kind() == Kind.COMMON ? 0.8f + (this.variant() % 4) * 0.08f : 0.75f;
     }
 
@@ -403,6 +554,10 @@ public class SteppeVillager extends AbstractVillager {
         output.putInt("Variant", this.variant());
         output.putBoolean("MaybeNotable", this.maybeNotable);
         output.putBoolean("Prepared", this.prepared);
+        output.putInt("KuiPart", this.kuiPart);
+        if (this.travelTarget != null) {
+            output.putLong("TravelTarget", this.travelTarget.asLong());
+        }
     }
 
     @Override
@@ -412,5 +567,8 @@ public class SteppeVillager extends AbstractVillager {
         this.entityData.set(VARIANT, v < 0 ? this.getRandom().nextInt(VARIANTS) : v % VARIANTS);
         this.maybeNotable = input.getBooleanOr("MaybeNotable", false);
         this.prepared = input.getBooleanOr("Prepared", false);
+        this.kuiPart = input.getIntOr("KuiPart", 0);
+        long target = input.getLongOr("TravelTarget", Long.MIN_VALUE);
+        this.travelTarget = target == Long.MIN_VALUE ? null : net.minecraft.core.BlockPos.of(target);
     }
 }

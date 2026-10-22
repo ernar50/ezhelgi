@@ -53,15 +53,19 @@ public final class EzhelgiMod {
             .title(Component.translatable("itemGroup.ezhelgi"))
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
             .icon(() -> ModItems.ALTYN_QYLYSH.get().getDefaultInstance())
-            .displayItems((params, output) -> ModItems.ITEMS.getEntries().stream()
-                    .filter(item -> item != ModItems.ARUAQ_SPECTRAL)
-                    .forEach(item -> output.accept(item.get())))
+            .displayItems((params, output) -> {
+                ModItems.ITEMS.getEntries().stream()
+                        .filter(item -> item != ModItems.ARUAQ_SPECTRAL && item != ModItems.QUMALAQ && item != ModItems.QUMALAQ_TUZDYK)
+                        .forEach(item -> output.accept(item.get()));
+                kz.ezhelgi.item.ModBanners.addTo(params, stack -> output.accept(stack));
+            })
             .build());
 
     public EzhelgiMod(FMLJavaModLoadingContext context) {
         var modBusGroup = context.getModBusGroup();
 
         ModBlocks.BLOCKS.register(modBusGroup);
+        kz.ezhelgi.block.ModBlockEntities.BLOCK_ENTITIES.register(modBusGroup);
         ModItems.ITEMS.register(modBusGroup);
         ModEntities.ENTITY_TYPES.register(modBusGroup);
         ModSounds.SOUNDS.register(modBusGroup);
@@ -104,6 +108,22 @@ public final class EzhelgiMod {
         event.put(ModEntities.ABAI.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
         event.put(ModEntities.SHOQAN.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
         event.put(ModEntities.AL_FARABI.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.ARQAR.get(), kz.ezhelgi.entity.animal.Arqar.createAttributes().build());
+        event.put(ModEntities.QARAQUIRYQ.get(), kz.ezhelgi.entity.animal.Qaraquiryq.createAttributes().build());
+        event.put(ModEntities.TAU_TEKE.get(), kz.ezhelgi.entity.animal.TauTeke.createAttributes().build());
+        event.put(ModEntities.AYU.get(), kz.ezhelgi.entity.animal.Ayu.createAttributes().build());
+        event.put(ModEntities.MANUL.get(), kz.ezhelgi.entity.animal.Manul.createAttributes().build());
+        event.put(ModEntities.QARSAQ.get(), kz.ezhelgi.entity.animal.Qarsaq.createAttributes().build());
+        event.put(ModEntities.ITBALYQ.get(), kz.ezhelgi.entity.animal.Itbalyq.createAttributes().build());
+        event.put(ModEntities.QOSAYAQ.get(), net.minecraft.world.entity.animal.rabbit.Rabbit.createAttributes().build());
+        event.put(ModEntities.PRZEWALSKI.get(), net.minecraft.world.entity.animal.equine.AbstractHorse.createBaseHorseAttributes().build());
+        event.put(ModEntities.QARAQUS.get(), kz.ezhelgi.entity.Qaraqus.createAttributes().build());
+        event.put(ModEntities.AIDAHAR.get(), kz.ezhelgi.entity.Aidahar.createAttributes().build());
+        event.put(ModEntities.MYSTAN_KEMPIR.get(), kz.ezhelgi.entity.MystanKempir.createAttributes().build());
+        event.put(ModEntities.AQSAQAL.get(), kz.ezhelgi.entity.Aqsaqal.createAttributes().build());
+        event.put(ModEntities.KUISHI.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.KERUENSHI.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.MYSTAN_TULKI.get(), net.minecraft.world.entity.animal.fox.Fox.createAttributes().build());
     }
 
     private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
@@ -140,6 +160,26 @@ public final class EzhelgiMod {
         event.register(ModEntities.KORKYT_ATA.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 kz.ezhelgi.entity.KorkytAta::checkSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.QARAQSHY.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.ARQAR.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.QARAQUIRYQ.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.TAU_TEKE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.AYU.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.MANUL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.QARSAQ.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.ITBALYQ.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.QOSAYAQ.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.QARAQUS.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.animal.WildAnimal::checkWildSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.MYSTAN_KEMPIR.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.SAMURYK.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Animal::checkAnimalSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);

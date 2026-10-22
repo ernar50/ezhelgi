@@ -43,7 +43,8 @@ public class NpcRenderer<T extends Mob> extends HumanoidMobRenderer<T, NpcRender
         super.extractRenderState(entity, state, partialTicks);
         state.texture = Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "textures/entity/" + this.texture.apply(entity) + ".png");
         state.playing = (entity instanceof BaqsyKolenkesi b && b.playingTicks() > 0)
-                || (entity instanceof KorkytAta k && k.playingTicks() > 0);
+                || (entity instanceof KorkytAta k && k.playingTicks() > 0)
+                || (entity instanceof kz.ezhelgi.entity.SteppeVillager v && v.isPlaying());
         state.statue = entity instanceof Balbal balbal && !balbal.isAwake();
         if (state.statue) {
             state.walkAnimationSpeed = 0.0f;
@@ -62,8 +63,9 @@ public class NpcRenderer<T extends Mob> extends HumanoidMobRenderer<T, NpcRender
         if (this.ghost) {
             poseStack.translate(0.0, 0.1 + Math.sin(state.ageInTicks * 0.08) * 0.06, 0.0);
         }
-        if (this.scale != 1.0f) {
-            poseStack.scale(this.scale, this.scale, this.scale);
+        float s = state.isBaby ? this.scale * 0.55f : this.scale;
+        if (s != 1.0f) {
+            poseStack.scale(s, s, s);
         }
         super.submit(state, poseStack, collector, camera);
         poseStack.popPose();

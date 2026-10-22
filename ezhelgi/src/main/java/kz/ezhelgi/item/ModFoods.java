@@ -68,5 +68,10 @@ public final class ModFoods {
             .nutrition(2).saturationModifier(0.3f).build();
     public static final FoodProperties PISKEN_AQBOKEN_ETI = new FoodProperties.Builder()
             .nutrition(7).saturationModifier(0.8f).build();
+    /** Мясо дичи: архар, джейран, тау-теке. */
+    public static final FoodProperties AN_ETI = new FoodProperties.Builder()
+            .nutrition(3).saturationModifier(0.3f).build();
+    public static final FoodProperties PISKEN_AN_ETI = new FoodProperties.Builder()
+            .nutrition(8).saturationModifier(0.85f).build();
     public static final Consumable MEAT_EAT = Consumables.defaultFood().build();
 }
