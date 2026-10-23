@@ -17,4 +17,15 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TogyzBlockEntity>> TOGYZ = BLOCK_ENTITIES.register("togyz_qumalaq",
             () -> new BlockEntityType<>(TogyzBlockEntity::new, Set.of(ModBlocks.TOGYZ_QUMALAQ.get())));
+
+    public static final RegistryObject<BlockEntityType<kz.ezhelgi.kitchen.KazanBlockEntity>> KAZAN = BLOCK_ENTITIES.register("kazan",
+            () -> new BlockEntityType<>(kz.ezhelgi.kitchen.KazanBlockEntity::new, Set.of(ModBlocks.KAZAN.get())));
+    public static final RegistryObject<BlockEntityType<kz.ezhelgi.kitchen.TandyrBlockEntity>> TANDYR = BLOCK_ENTITIES.register("tandyr",
+            () -> new BlockEntityType<>(kz.ezhelgi.kitchen.TandyrBlockEntity::new, Set.of(ModBlocks.TANDYR.get())));
+    public static final RegistryObject<BlockEntityType<kz.ezhelgi.kitchen.KeptirgishBlockEntity>> KEPTIRGISH = BLOCK_ENTITIES.register("keptirgish",
+            () -> new BlockEntityType<>(kz.ezhelgi.kitchen.KeptirgishBlockEntity::new, Set.of(ModBlocks.KEPTIRGISH.get())));
+    public static final RegistryObject<BlockEntityType<kz.ezhelgi.kitchen.SamauyrBlockEntity>> SAMAUYR = BLOCK_ENTITIES.register("samauyr",
+            () -> new BlockEntityType<>(kz.ezhelgi.kitchen.SamauyrBlockEntity::new, Set.of(ModBlocks.SAMAUYR.get())));
+    public static final RegistryObject<BlockEntityType<kz.ezhelgi.furniture.KebezheBlockEntity>> KEBEZHE = BLOCK_ENTITIES.register("kebezhe",
+            () -> new BlockEntityType<>(kz.ezhelgi.furniture.KebezheBlockEntity::new, Set.of(ModBlocks.KEBEZHE.get())));
 }

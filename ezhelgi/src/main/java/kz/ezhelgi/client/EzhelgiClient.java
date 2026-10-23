@@ -38,6 +38,11 @@ public final class EzhelgiClient {
     public static final ModelLayerLocation QARAQUS_LAYER = layer("qaraqus");
     public static final ModelLayerLocation AIDAHAR_LAYER = layer("aidahar");
     public static final ModelLayerLocation MYSTAN_LAYER = layer("mystan_kempir");
+    public static final ModelLayerLocation ZHYLAN_LAYER = layer("zhylan");
+    public static final ModelLayerLocation ZHYN_LAYER = layer("zhyn");
+    public static final ModelLayerLocation SHAHMARAN_LAYER = layer("shahmaran");
+    public static final ModelLayerLocation SHOIYNQULAQ_LAYER = layer("shoiynqulaq");
+    public static final ModelLayerLocation QANBAQ_LAYER = layer("qanbaq");
 
     public static void init(BusGroup modBusGroup) {
         EntityRenderersEvent.RegisterLayerDefinitions.BUS.addListener(EzhelgiClient::registerLayers);
@@ -74,6 +79,11 @@ public final class EzhelgiClient {
         event.registerLayerDefinition(QARAQUS_LAYER, QaraqusModel::createBodyLayer);
         event.registerLayerDefinition(AIDAHAR_LAYER, AidaharModel::createBodyLayer);
         event.registerLayerDefinition(MYSTAN_LAYER, () -> FolkModel.createLayer(18.0f, 1.0f));
+        event.registerLayerDefinition(ZHYLAN_LAYER, ZhylanModel::createBodyLayer);
+        event.registerLayerDefinition(ZHYN_LAYER, ZhynModel::createBodyLayer);
+        event.registerLayerDefinition(SHAHMARAN_LAYER, ShahmaranModel::createBodyLayer);
+        event.registerLayerDefinition(SHOIYNQULAQ_LAYER, ShoiynqulaqModel::createBodyLayer);
+        event.registerLayerDefinition(QANBAQ_LAYER, QanbaqModel::createBodyLayer);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -113,6 +123,28 @@ public final class EzhelgiClient {
         event.registerEntityRenderer(ModEntities.KERUENSHI.get(), ctx -> new NpcRenderer<>(ctx,
                 (kz.ezhelgi.entity.SteppeVillager e) -> "keruenshi_" + (e.variant() % 2), 0.97f, false));
         event.registerBlockEntityRenderer(kz.ezhelgi.block.ModBlockEntities.TOGYZ.get(), TogyzRenderer::new);
+        event.registerEntityRenderer(ModEntities.SHABANDOZ.get(), ctx -> new NpcRenderer<>(ctx,
+                (kz.ezhelgi.aul.Shabandoz e) -> "shabandoz_" + (e.team() == 0 ? "red" : e.team() == 1 ? "blue" : "jockey"), 0.95f, false));
+        event.registerEntityRenderer(ModEntities.SERKE.get(), net.minecraft.client.renderer.entity.GoatRenderer::new);
+        event.registerEntityRenderer(ModEntities.AQYN.get(), ctx -> new NpcRenderer<>(ctx,
+                (kz.ezhelgi.aul.Aqyn e) -> "aqyn_" + (e.variant() % 2), 0.97f, false));
+        event.registerEntityRenderer(ModEntities.KELIN.get(), ctx -> NpcRenderer.fixed(ctx, "kelin", 0.93f, false));
+        event.registerEntityRenderer(ModEntities.ZHYRSHY.get(), ctx -> NpcRenderer.fixed(ctx, "zhyrshy", 0.95f, false));
+        event.registerEntityRenderer(ModEntities.SAQA.get(), net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
+        event.registerEntityRenderer(ModEntities.ZHYLAN.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new ZhylanModel(ctx.bakeLayer(ZHYLAN_LAYER)), 0.3f, texture("zhylan"), 1.0f));
+        event.registerEntityRenderer(ModEntities.ZHYN.get(), ctx -> new EzhelgiMobRenderer<kz.ezhelgi.entity.cave.Zhyn>(ctx,
+                new ZhynModel(ctx.bakeLayer(ZHYN_LAYER)), 0.4f,
+                e -> texture(e.variant() == 1 ? "zhyn_qyzyl" : e.variant() == 2 ? "zhyn_kok" : "zhyn_qara"), 1.0f));
+        event.registerEntityRenderer(ModEntities.SHAHMARAN.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new ShahmaranModel(ctx.bakeLayer(SHAHMARAN_LAYER)), 0.7f, texture("shahmaran"), 1.05f));
+        event.registerEntityRenderer(ModEntities.SHOIYNQULAQ.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new ShoiynqulaqModel(ctx.bakeLayer(SHOIYNQULAQ_LAYER)), 2.0f, texture("shoiynqulaq"), 2.1f));
+        event.registerEntityRenderer(ModEntities.DARWISH.get(), ctx -> NpcRenderer.fixed(ctx, "darwish", 0.95f, false));
+        event.registerEntityRenderer(ModEntities.QANBAQ.get(), ctx -> new EzhelgiMobRenderer<>(ctx,
+                new QanbaqModel(ctx.bakeLayer(QANBAQ_LAYER)), 0.35f, texture("qanbaq"), 1.0f));
+        event.registerEntityRenderer(ModEntities.SEAT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
+        event.registerBlockEntityRenderer(kz.ezhelgi.block.ModBlockEntities.KEPTIRGISH.get(), KeptirgishRenderer::new);
         event.registerEntityRenderer(ModEntities.SHOQAN.get(), ctx -> NpcRenderer.fixed(ctx, "shoqan", 0.97f, false));
         event.registerEntityRenderer(ModEntities.AL_FARABI.get(), ctx -> NpcRenderer.fixed(ctx, "al_farabi", 0.97f, false));
         event.registerEntityRenderer(ModEntities.SAIGA.get(), ctx -> new EzhelgiMobRenderer<>(ctx,

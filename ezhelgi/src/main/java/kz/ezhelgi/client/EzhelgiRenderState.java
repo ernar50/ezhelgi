@@ -10,4 +10,5 @@ public class EzhelgiRenderState extends LivingEntityRenderState {
     public float wheel;
     public boolean male;
     public boolean attacking;
+    public net.minecraft.resources.Identifier texture;
 }

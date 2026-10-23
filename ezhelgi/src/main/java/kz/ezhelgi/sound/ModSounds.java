@@ -94,6 +94,23 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> SINGING_SAND = sound("block.an_qum.sing");
     public static final RegistryObject<SoundEvent> PETROGLYPH = sound("block.tanba.found");
 
+    // v8: пещеры
+    public static final RegistryObject<SoundEvent> ZHYLAN_HISS = sound("entity.zhylan.hiss");
+    public static final RegistryObject<SoundEvent> ZHYN_AMBIENT = sound("entity.zhyn.ambient");
+    public static final RegistryObject<SoundEvent> ZHYN_HURT = sound("entity.zhyn.hurt");
+    public static final RegistryObject<SoundEvent> ZHYN_DEATH = sound("entity.zhyn.death");
+    public static final RegistryObject<SoundEvent> SHAHMARAN_SPEAK = sound("entity.shahmaran.speak");
+    public static final RegistryObject<SoundEvent> SHOIYN_ROAR = sound("entity.shoiynqulaq.roar");
+    public static final RegistryObject<SoundEvent> SHOIYN_CLAP = sound("entity.shoiynqulaq.clap");
+    public static final RegistryObject<SoundEvent> SHOIYN_HURT = sound("entity.shoiynqulaq.hurt");
+    public static final RegistryObject<SoundEvent> SHOIYN_DEATH = sound("entity.shoiynqulaq.death");
+    public static final RegistryObject<SoundEvent> SYBYZGY = sound("item.sybyzgy.play");
+    public static final RegistryObject<SoundEvent> ZHETIGEN = sound("item.zhetigen.play");
+    public static final RegistryObject<SoundEvent> SHANQOBYZ = sound("item.shanqobyz.play");
+    public static final RegistryObject<SoundEvent> DAUYLPAZ = sound("item.dauylpaz.play");
+    public static final RegistryObject<SoundEvent> KAZAN_BUBBLE = sound("block.kazan.bubble");
+    public static final RegistryObject<SoundEvent> SAMAUYR_BOIL = sound("block.samauyr.boil");
+
     // v7: кюй Курмангазы (20 частей) и пластинка «Адай»
     public static final java.util.List<RegistryObject<SoundEvent>> KURMANGAZY_KUI = kuiParts();
     public static final RegistryObject<SoundEvent> MUSIC_DISC_ADAI = sound("music_disc.adai");

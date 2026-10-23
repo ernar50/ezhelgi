@@ -30,6 +30,17 @@ import org.jspecify.annotations.Nullable;
 public abstract class SteppeWarrior extends Monster {
     protected int mode = 0;
     private boolean prepared = false;
+    /** Защитник аула во время набега: не трогает игроков. */
+    protected boolean defender = false;
+
+    public void makeDefender() {
+        this.defender = true;
+        this.setTarget(null);
+    }
+
+    public boolean isDefender() {
+        return this.defender;
+    }
 
     protected SteppeWarrior(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -62,7 +73,7 @@ public abstract class SteppeWarrior extends Monster {
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 10.0f));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true, (target, lvl) -> !this.defender));
         Class<? extends Monster> enemy = this.enemyClass();
         if (enemy != null) {
             this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, enemy, true));
@@ -110,6 +121,7 @@ public abstract class SteppeWarrior extends Monster {
         super.addAdditionalSaveData(output);
         output.putInt("Mode", this.mode);
         output.putBoolean("Prepared", this.prepared);
+        output.putBoolean("Defender", this.defender);
     }
 
     @Override
@@ -117,5 +129,6 @@ public abstract class SteppeWarrior extends Monster {
         super.readAdditionalSaveData(input);
         this.mode = input.getIntOr("Mode", 0);
         this.prepared = input.getBooleanOr("Prepared", false);
+        this.defender = input.getBooleanOr("Defender", false);
     }
 }

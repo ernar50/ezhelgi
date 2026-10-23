@@ -274,4 +274,89 @@ public final class ModEntities {
                     .sized(0.6f, 1.95f)
                     .clientTrackingRange(10)
                     .build(ENTITY_TYPES.key("keruenshi")));
+
+    // ---------- v8: праздники аула ----------
+    public static final RegistryObject<EntityType<kz.ezhelgi.aul.Shabandoz>> SHABANDOZ = ENTITY_TYPES.register("shabandoz",
+            () -> EntityType.Builder.<kz.ezhelgi.aul.Shabandoz>of(kz.ezhelgi.aul.Shabandoz::new, MobCategory.MISC)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("shabandoz")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.aul.Serke>> SERKE = ENTITY_TYPES.register("serke",
+            () -> EntityType.Builder.<kz.ezhelgi.aul.Serke>of(kz.ezhelgi.aul.Serke::new, MobCategory.MISC)
+                    .sized(0.9f, 0.8f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("serke")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.aul.Aqyn>> AQYN = ENTITY_TYPES.register("aqyn",
+            () -> EntityType.Builder.<kz.ezhelgi.aul.Aqyn>of(kz.ezhelgi.aul.Aqyn::new, MobCategory.MISC)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("aqyn")));
+
+    public static final RegistryObject<EntityType<SteppeVillager>> KELIN = ENTITY_TYPES.register("kelin",
+            () -> EntityType.Builder.<SteppeVillager>of(SteppeVillager::new, MobCategory.CREATURE)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("kelin")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.aul.Zhyrshy>> ZHYRSHY = ENTITY_TYPES.register("zhyrshy",
+            () -> EntityType.Builder.<kz.ezhelgi.aul.Zhyrshy>of(kz.ezhelgi.aul.Zhyrshy::new, MobCategory.CREATURE)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("zhyrshy")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.aul.Saqa>> SAQA = ENTITY_TYPES.register("saqa",
+            () -> EntityType.Builder.<kz.ezhelgi.aul.Saqa>of(kz.ezhelgi.aul.Saqa::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.25f, 0.25f)
+                    .clientTrackingRange(4)
+                    .updateInterval(10)
+                    .build(ENTITY_TYPES.key("saqa")));
+
+    // ---------- v8: пещеры ----------
+    public static final RegistryObject<EntityType<kz.ezhelgi.entity.cave.Zhylan>> ZHYLAN = ENTITY_TYPES.register("zhylan",
+            () -> EntityType.Builder.<kz.ezhelgi.entity.cave.Zhylan>of(kz.ezhelgi.entity.cave.Zhylan::new, MobCategory.MONSTER)
+                    .sized(0.8f, 0.45f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("zhylan")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.entity.cave.Zhyn>> ZHYN = ENTITY_TYPES.register("zhyn",
+            () -> EntityType.Builder.<kz.ezhelgi.entity.cave.Zhyn>of(kz.ezhelgi.entity.cave.Zhyn::new, MobCategory.MONSTER)
+                    .sized(0.7f, 1.6f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("zhyn")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.entity.cave.Shahmaran>> SHAHMARAN = ENTITY_TYPES.register("shahmaran",
+            () -> EntityType.Builder.<kz.ezhelgi.entity.cave.Shahmaran>of(kz.ezhelgi.entity.cave.Shahmaran::new, MobCategory.CREATURE)
+                    .sized(1.0f, 2.1f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("shahmaran")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.entity.cave.Shoiynqulaq>> SHOIYNQULAQ = ENTITY_TYPES.register("shoiynqulaq",
+            () -> EntityType.Builder.<kz.ezhelgi.entity.cave.Shoiynqulaq>of(kz.ezhelgi.entity.cave.Shoiynqulaq::new, MobCategory.MONSTER)
+                    .sized(1.8f, 5.2f)
+                    .fireImmune()
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("shoiynqulaq")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.entity.cave.Darwish>> DARWISH = ENTITY_TYPES.register("darwish",
+            () -> EntityType.Builder.<kz.ezhelgi.entity.cave.Darwish>of(kz.ezhelgi.entity.cave.Darwish::new, MobCategory.CREATURE)
+                    .sized(0.6f, 1.95f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("darwish")));
+
+    // ---------- v8: природа и мебель ----------
+    public static final RegistryObject<EntityType<kz.ezhelgi.nature.Qanbaq>> QANBAQ = ENTITY_TYPES.register("qanbaq",
+            () -> EntityType.Builder.<kz.ezhelgi.nature.Qanbaq>of(kz.ezhelgi.nature.Qanbaq::new, MobCategory.AMBIENT)
+                    .sized(0.9f, 0.9f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("qanbaq")));
+
+    public static final RegistryObject<EntityType<kz.ezhelgi.furniture.Seat>> SEAT = ENTITY_TYPES.register("seat",
+            () -> EntityType.Builder.<kz.ezhelgi.furniture.Seat>of(kz.ezhelgi.furniture.Seat::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.01f, 0.01f)
+                    .clientTrackingRange(10)
+                    .build(ENTITY_TYPES.key("seat")));
 }

@@ -45,6 +45,76 @@ public final class ModEvents {
         LivingDeathEvent.BUS.addListener(ModEvents::onDeath);
         PlayerInteractEvent.EntityInteractSpecific.BUS.addListener(ModEvents::onInteract);
         net.minecraftforge.event.TickEvent.PlayerTickEvent.Post.BUS.addListener(ModEvents::onPlayerTick);
+        net.minecraftforge.event.TickEvent.LevelTickEvent.Post.BUS.addListener(ModEvents::onLevelTick);
+        net.minecraftforge.event.entity.EntityJoinLevelEvent.BUS.addListener(ModEvents::onJoin);
+    }
+
+    // ------------------------------------------------------------------ мүшел жыл
+    private static long announcedMushel = -1;
+
+    /** Мүшел: 13-й день, а потом каждый 12-й — нечисть сильнее и в броне. */
+    public static boolean isMushel(ServerLevel level) {
+        long day = level.getOverworldClockTime() / 24000L;
+        return day >= 12 && day % 12 == 0;
+    }
+
+    private static void onLevelTick(net.minecraftforge.event.TickEvent.LevelTickEvent.Post event) {
+        if (!(event.level() instanceof ServerLevel level)) {
+            return;
+        }
+        kz.ezhelgi.aul.AulEvents.tick(level);
+        if (level.dimension() != net.minecraft.world.level.Level.OVERWORLD || level.getGameTime() % 100 != 0) {
+            return;
+        }
+        long day = level.getOverworldClockTime() / 24000L;
+        if (isMushel(level) && announcedMushel != day) {
+            announcedMushel = day;
+            for (ServerPlayer p : level.players()) {
+                p.sendSystemMessage(Component.translatable("message.ezhelgi.mushel.start", day + 1)
+                        .withStyle(net.minecraft.ChatFormatting.DARK_RED));
+                p.sendSystemMessage(Component.translatable("message.ezhelgi.mushel.desc").withStyle(net.minecraft.ChatFormatting.GRAY));
+                level.playSound(null, p.blockPosition(), SoundEvents.WITHER_AMBIENT, SoundSource.AMBIENT, 0.6f, 0.6f);
+            }
+        }
+    }
+
+    private static final net.minecraft.resources.Identifier MUSHEL_ID =
+            net.minecraft.resources.Identifier.fromNamespaceAndPath("ezhelgi", "mushel");
+
+    private static void onJoin(net.minecraftforge.event.entity.EntityJoinLevelEvent event) {
+        if (event.loadedFromDisk() || !(event.getLevel() instanceof ServerLevel level)
+                || !(event.getEntity() instanceof net.minecraft.world.entity.monster.Monster mob)
+                || level.dimension() != net.minecraft.world.level.Level.OVERWORLD || !isMushel(level)) {
+            return;
+        }
+        addMod(mob, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH, 0.5,
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        addMod(mob, net.minecraft.world.entity.ai.attributes.Attributes.ARMOR, 6.0,
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE);
+        addMod(mob, net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS, 2.0,
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE);
+        addMod(mob, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE, 0.3,
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        mob.setHealth(mob.getMaxHealth());
+        // больше брони: шлем и нагрудник, если их нет
+        var r = level.getRandom();
+        if (mob.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).isEmpty() && r.nextFloat() < 0.6f) {
+            mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(r.nextBoolean() ? Items.IRON_HELMET : Items.CHAINMAIL_HELMET));
+            mob.setDropChance(net.minecraft.world.entity.EquipmentSlot.HEAD, 0.05f);
+        }
+        if (mob.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).isEmpty() && r.nextFloat() < 0.5f) {
+            mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(r.nextBoolean() ? Items.IRON_CHESTPLATE : Items.CHAINMAIL_CHESTPLATE));
+            mob.setDropChance(net.minecraft.world.entity.EquipmentSlot.CHEST, 0.05f);
+        }
+    }
+
+    private static void addMod(net.minecraft.world.entity.LivingEntity mob,
+                               net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attr, double value,
+                               net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation op) {
+        var inst = mob.getAttribute(attr);
+        if (inst != null && !inst.hasModifier(MUSHEL_ID)) {
+            inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(MUSHEL_ID, value, op));
+        }
     }
 
     /** Бонусы полных эпических доспехов: проверяем раз в секунду. */
@@ -53,6 +123,7 @@ public final class ModEvents {
         if (!(player instanceof ServerPlayer sp) || sp.tickCount % 20 != 0 || !sp.isAlive()) {
             return;
         }
+        clothes(sp);
         String set = fullSet(sp);
         if (set == null) {
             return;
@@ -81,6 +152,41 @@ public final class ModEvents {
         }
     }
 
+    /** Бонусы национальной одежды. */
+    private static void clothes(ServerPlayer sp) {
+        for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{
+                net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST}) {
+            if (!(sp.getItemBySlot(slot).getItem() instanceof kz.ezhelgi.item.ClothesItem c)) {
+                continue;
+            }
+            switch (c.kind()) {
+                case "shapan" -> {
+                    // шапан греет: в холодных краях не мёрзнешь и легче держишь удар
+                    if (sp.level().getBiome(sp.blockPosition()).value().coldEnoughToSnow(sp.blockPosition(), sp.level().getSeaLevel())) {
+                        effect(sp, net.minecraft.world.effect.MobEffects.RESISTANCE, 0);
+                        sp.setTicksFrozen(0);
+                    }
+                }
+                case "kamzol" -> effect(sp, net.minecraft.world.effect.MobEffects.SPEED, 0);
+                case "taqiya" -> effect(sp, net.minecraft.world.effect.MobEffects.LUCK, 0);
+                case "kimeshek" -> effect(sp, net.minecraft.world.effect.MobEffects.HEALTH_BOOST, 0);
+                case "saukele" -> {
+                    effect(sp, net.minecraft.world.effect.MobEffects.LUCK, 1);
+                    effect(sp, net.minecraft.world.effect.MobEffects.HERO_OF_THE_VILLAGE, 0);
+                }
+                case "uki_borik" -> {
+                    // перья филина берегут от сглаза и порчи
+                    sp.removeEffect(net.minecraft.world.effect.MobEffects.POISON);
+                    sp.removeEffect(net.minecraft.world.effect.MobEffects.WEAKNESS);
+                    sp.removeEffect(net.minecraft.world.effect.MobEffects.NAUSEA);
+                    effect(sp, net.minecraft.world.effect.MobEffects.NIGHT_VISION, 0);
+                }
+                case "kelin_koilek" -> effect(sp, net.minecraft.world.effect.MobEffects.REGENERATION, 0);
+                default -> { }
+            }
+        }
+    }
+
     private static void effect(Player player, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect, int amp) {
         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(effect, 50, amp, true, false, true));
     }
@@ -106,6 +212,10 @@ public final class ModEvents {
         LivingEntity entity = event.getEntity();
         if (!(entity.level() instanceof ServerLevel level) || entity.isBaby()) {
             return;
+        }
+        if (entity instanceof net.minecraft.world.entity.animal.sheep.Sheep && level.getRandom().nextFloat() < 0.35f) {
+            event.getDrops().add(new ItemEntity(level, entity.getX(), entity.getY() + 0.5, entity.getZ(),
+                    new ItemStack(ModItems.ASYQ.get(), 1 + level.getRandom().nextInt(2))));
         }
         if (entity instanceof Horse) {
             int n = 1 + level.getRandom().nextInt(3);

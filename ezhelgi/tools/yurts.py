@@ -233,8 +233,24 @@ def build_yurt(R, wall_h, slope, path_len, seed, style="aq", loot=e("chests/yurt
         for side in (-1, 1):
             bx = c + side * int(R - 1.5)
             if inside(bx, c) and not is_wall(bx, c) and abs(bx - c) >= 2:
-                t.put(bx, 1, c, "minecraft:barrel", {"facing": "up", "open": "false"})
+                if side < 0:
+                    # кебеже — расписной сундук с приданым и припасами
+                    t.put(bx, 1, c, e("kebezhe"), {"facing": "east"},
+                          {"id": (8, e("kebezhe")), "LootTable": (8, e("chests/kebezhe"))})
+                else:
+                    t.put(bx, 1, c, "minecraft:barrel", {"facing": "up", "open": "false"})
                 t.put(bx, 2, c, "minecraft:lantern", LANTERN)
+        if R >= 4 and style not in ("qos", "han"):
+            # дастархан посреди юрты и көрпе вокруг
+            t.put(c, 1, c, e("dastarkhan"), {"facing": "south"})
+            for dx, dz in ((0, -1), (-1, 0), (1, 0)):
+                if inside(c + dx, c + dz) and not is_wall(c + dx, c + dz):
+                    t.put(c + dx, 1, c + dz, e("korpe"), {"facing": "south"})
+        if style == "otau" and R >= 4:
+            # в отау молодой семьи — бесік
+            bz = c - 2
+            if inside(c + 2, bz) and not is_wall(c + 2, bz):
+                t.put(c + 2, 1, bz, e("besik"), {"facing": "east"})
         # кровати вдоль стен, верстак и печь у задней стены
         BED = {"aq": "minecraft:white_bed", "qonyr": "minecraft:brown_bed", "otau": "minecraft:red_bed",
                "han": "minecraft:red_bed", "qos": "minecraft:brown_bed", "kok": "minecraft:light_blue_bed",
@@ -298,7 +314,7 @@ def villager_nbt(rng, notable=False):
     return nbt
 
 
-def pen(t, x0, z0, w, d, rng, horses=3, tulpar=False, sheep=0, camels=0):
+def pen(t, x0, z0, w, d, rng, horses=3, tulpar=False, sheep=0, camels=0, przewalski=0):
     """Загон с лошадьми: забор из еловых столбов и сено."""
     for x in range(x0, x0 + w):
         for z in range(z0, z0 + d):
@@ -329,6 +345,42 @@ def pen(t, x0, z0, w, d, rng, horses=3, tulpar=False, sheep=0, camels=0):
         t.entity(x0 + 1.5 + (i * 3) % max(1, w - 2), 1, z0 + 1.5 + (i % 2) * 2, sheep_nbt(rng))
     for i in range(camels):
         t.entity(x0 + w - 2.5, 1, z0 + 2.5 + i * 2, {"id": (8, "minecraft:camel"), "PersistenceRequired": (1, 1)})
+    for i in range(przewalski):
+        # лошади Пржевальского живут только в аулах
+        t.entity(x0 + 2.5 + (i * 2) % max(1, w - 4), 1, z0 + d - 2.5, {"id": (8, e("przewalski")), "PersistenceRequired": (1, 1)})
+
+
+def life(t, cx, cz, radius, rng, kuishi=1, kids=2, boards=1, flags=(), zhyrshy=False, asyq=True):
+    """Жизнь аула: аксакал у огня, кюйши с домбырой, дети, доска тоғыз құмалақ, флаги жузов."""
+    t.entity(cx + 1.5, 1, cz - 1.5, {"id": (8, e("aqsaqal")), "PersistenceRequired": (1, 1)})
+    for i in range(kuishi):
+        a = math.pi * 0.25 + i * math.pi
+        t.entity(cx + math.cos(a) * 2.5 + 0.5, 1, cz + math.sin(a) * 2.5 + 0.5,
+                 {"id": (8, e("kuishi")), "PersistenceRequired": (1, 1), "Variant": (3, rng.randrange(20))})
+    for i in range(kids):
+        a = rng.uniform(0, 2 * math.pi)
+        r = radius * rng.uniform(0.3, 0.7)
+        t.entity(cx + math.cos(a) * r + 0.5, 1, cz + math.sin(a) * r + 0.5,
+                 {"id": (8, e("auyldas")), "PersistenceRequired": (1, 1), "Variant": (3, rng.randrange(20)),
+                  "Age": (3, -24000)})
+    for i in range(boards):
+        # доска тоғыз құмалақ на ковре у края площади
+        bx, bz = int(cx - radius + 3) + i * 5, int(cz + radius - 3)
+        for dx in (-1, 0, 1, 2):
+            for dz in (-1, 0, 1):
+                t.put(bx + dx, 1, bz + dz, e("syrmak"))
+        t.put(bx, 1, bz, e("togyz_qumalaq"), {"facing": "north", "part": "foot"}, {"id": (8, e("togyz_qumalaq"))})
+        t.put(bx + 1, 1, bz, e("togyz_qumalaq"), {"facing": "north", "part": "head"})
+    if zhyrshy:
+        t.entity(cx - 2.5, 1, cz + 1.5, {"id": (8, e("zhyrshy")), "PersistenceRequired": (1, 1)})
+    if asyq:
+        # ряд асыков на площади — дети играют в асық ату
+        ax, az = int(cx + radius - 4), int(cz - radius + 4)
+        t.put(ax, 1, az, e("asyq_qatar"), {"facing": "east", "count": "5"})
+        t.put(ax, 1, az + 1, e("asyq_qatar"), {"facing": "east", "count": "5"})
+    for i, (fx, fz, name) in enumerate(flags):
+        t.put(fx, 1, fz, e(name), {"facing": "south", "half": "lower"})
+        t.put(fx, 2, fz, e(name), {"facing": "south", "half": "upper"})
 
 
 def people(t, cx, cz, radius, rng, n, notables=0):
@@ -346,9 +398,21 @@ def plaza(t, cx, cz, radius, rng):
                 t.put(x, 0, z, "minecraft:dirt_path" if rng.random() < 0.6 else "minecraft:coarse_dirt")
     t.put(cx, 0, cz, "minecraft:stone_bricks")
     t.put(cx, 1, cz, "minecraft:campfire", CAMPFIRE)
-    t.put(cx + 1, 1, cz, "minecraft:cauldron")
+    # қазан на огне — уже с водой: остаётся положить мясо
+    t.put(cx, 2, cz, e("kazan"), {"stage": "1"}, {"id": (8, e("kazan"))})
     for dx, dz in ((-3, 0), (3, 0), (0, 3), (0, -3)):
         t.put(cx + dx, 1, cz + dz, "minecraft:spruce_slab", SLAB)
+    kitchen(t, cx, cz)
+
+
+def kitchen(t, cx, cz):
+    """Летняя кухня у площади: тандыр, кептіргіш, самауыр и дастархан с көрпе."""
+    t.put(cx + 5, 1, cz + 3, e("tandyr"), {"facing": "west", "lit": "false"}, {"id": (8, e("tandyr"))})
+    t.put(cx + 5, 1, cz + 5, e("keptirgish"), {"facing": "west"}, {"id": (8, e("keptirgish"))})
+    t.put(cx - 4, 1, cz + 3, e("samauyr"), {"facing": "east", "lit": "false"}, {"id": (8, e("samauyr"))})
+    t.put(cx - 4, 1, cz + 4, e("dastarkhan"), {"facing": "south"})
+    t.put(cx - 3, 1, cz + 4, e("korpe"), {"facing": "west"})
+    t.put(cx - 4, 1, cz + 5, e("korpe"), {"facing": "north"})
 
 
 def place_yurt(t, y, cx, cz, door):
@@ -395,9 +459,10 @@ def build_aul_small():
     place_yurt(t, yurt("aq_small", 2), 8, mid + 2, "east")
     place_yurt(t, yurt("qos", 3), 40, mid + 2, "west")
     place_yurt(t, yurt("otau", 4), mid, 40, "north")
-    pen(t, 32, 33, 7, 6, rng, horses=2)
+    pen(t, 32, 33, 7, 6, rng, horses=2, przewalski=1)
     pen(t, 8, 33, 7, 6, rng, horses=0, sheep=4)
-    people(t, mid, mid + 2, 9.5, rng, 3)
+    people(t, mid, mid + 2, 9.5, rng, 3, notables=1)
+    life(t, mid, mid + 2, 9.5, rng, kuishi=0, kids=2, boards=0)
     return t
 
 
@@ -413,9 +478,10 @@ def build_aul_medium():
     place_yurt(t, yurt("qos", 5), 32, 54, "north")
     place_yurt(t, yurt("qonyr_small", 6), 48, 52, "north")
     place_yurt(t, yurt("kok", 7), 53, 13, "west")
-    pen(t, 4, 4, 10, 8, rng, horses=4)
+    pen(t, 4, 4, 10, 8, rng, horses=3, przewalski=2)
     pen(t, 4, 40, 9, 7, rng, horses=0, sheep=5)
     people(t, mid, mid, 11.5, rng, 5, notables=1)
+    life(t, mid, mid, 11.5, rng, kuishi=1, kids=3, boards=1, flags=((mid - 5, 20, "tu_orta_juz"),), zhyrshy=True)
     return t
 
 
@@ -439,10 +505,12 @@ def build_aul_large():
     place_yurt(t, yurt("qos", 10), 80, 76, "west")
     place_yurt(t, yurt("kok", 12), 26, 38, "east")
     place_yurt(t, yurt("qara", 13), 64, 38, "west")
-    pen(t, 30, 54, 10, 8, rng, horses=4)
+    pen(t, 30, 54, 10, 8, rng, horses=3, przewalski=2)
     pen(t, 50, 54, 10, 8, rng, horses=3, tulpar=True, camels=1)
     pen(t, 4, 4, 11, 8, rng, horses=0, sheep=6)
-    people(t, mid, mid + 4, 13.5, rng, 8, notables=2)
+    people(t, mid, mid + 4, 13.5, rng, 8, notables=3)
+    life(t, mid, mid + 4, 13.5, rng, kuishi=2, kids=5, boards=2, zhyrshy=True,
+         flags=((mid - 5, 27, "tu_handyq"), (mid + 5, 27, "tu_uly_juz"), (mid - 16, 44, "tu_kishi_juz")))
     return t
 
 

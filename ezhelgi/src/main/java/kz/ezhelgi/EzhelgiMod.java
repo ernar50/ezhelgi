@@ -73,6 +73,8 @@ public final class EzhelgiMod {
         ModMenus.MENUS.register(modBusGroup);
         Accessories.init();
         kz.ezhelgi.event.ModEvents.init();
+        kz.ezhelgi.nature.NatureEvents.init();
+        kz.ezhelgi.aul.Zharmenke.init();
 
         EntityAttributeCreationEvent.BUS.addListener(EzhelgiMod::registerAttributes);
         SpawnPlacementRegisterEvent.BUS.addListener(EzhelgiMod::registerSpawnPlacements);
@@ -123,10 +125,25 @@ public final class EzhelgiMod {
         event.put(ModEntities.AQSAQAL.get(), kz.ezhelgi.entity.Aqsaqal.createAttributes().build());
         event.put(ModEntities.KUISHI.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
         event.put(ModEntities.KERUENSHI.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.SHABANDOZ.get(), kz.ezhelgi.aul.Shabandoz.createAttributes().build());
+        event.put(ModEntities.SERKE.get(), net.minecraft.world.entity.animal.goat.Goat.createAttributes().build());
+        event.put(ModEntities.AQYN.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.KELIN.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.ZHYRSHY.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.ZHYLAN.get(), kz.ezhelgi.entity.cave.Zhylan.createAttributes().build());
+        event.put(ModEntities.ZHYN.get(), kz.ezhelgi.entity.cave.Zhyn.createAttributes().build());
+        event.put(ModEntities.SHAHMARAN.get(), kz.ezhelgi.entity.cave.Shahmaran.createAttributes().build());
+        event.put(ModEntities.SHOIYNQULAQ.get(), kz.ezhelgi.entity.cave.Shoiynqulaq.createAttributes().build());
+        event.put(ModEntities.DARWISH.get(), kz.ezhelgi.entity.SteppeVillager.createAttributes().build());
+        event.put(ModEntities.QANBAQ.get(), kz.ezhelgi.nature.Qanbaq.createAttributes().build());
         event.put(ModEntities.MYSTAN_TULKI.get(), net.minecraft.world.entity.animal.fox.Fox.createAttributes().build());
     }
 
     private static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
+        event.register(ModEntities.ZHYLAN.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.cave.Zhylan::checkCaveSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.ZHYN.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                kz.ezhelgi.entity.cave.Zhyn::checkCaveSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.KOKBORI.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Animal::checkAnimalSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.TULPAR.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

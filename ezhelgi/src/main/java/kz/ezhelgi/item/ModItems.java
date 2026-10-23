@@ -308,6 +308,91 @@ public final class ModItems {
     public static final RegistryObject<Item> KUISHI_SPAWN_EGG = egg("kuishi", () -> ModEntities.KUISHI.get());
     public static final RegistryObject<Item> KERUENSHI_SPAWN_EGG = egg("keruenshi", () -> ModEntities.KERUENSHI.get());
 
+    // ---------- v8: асық ату, одежда, пояса ----------
+    public static final RegistryObject<Item> ASYQ = item("asyq", p -> new Item(p.stacksTo(64)));
+    public static final RegistryObject<Item> SAQA = item("saqa", p -> new kz.ezhelgi.aul.SaqaItem(p.stacksTo(16)));
+    public static final RegistryObject<Item> ASYQ_QATAR = blockItem("asyq_qatar", ModBlocks.ASYQ_QATAR);
+
+    public static final RegistryObject<Item> SHAPAN = clothes("shapan", ArmorType.CHESTPLATE, Rarity.UNCOMMON);
+    public static final RegistryObject<Item> KAMZOL = clothes("kamzol", ArmorType.CHESTPLATE, Rarity.COMMON);
+    public static final RegistryObject<Item> TAQIYA = clothes("taqiya", ArmorType.HELMET, Rarity.COMMON);
+    public static final RegistryObject<Item> KIMESHEK = clothes("kimeshek", ArmorType.HELMET, Rarity.COMMON);
+    public static final RegistryObject<Item> SAUKELE = clothes("saukele", ArmorType.HELMET, Rarity.EPIC);
+    public static final RegistryObject<Item> UKI_BORIK = clothes("uki_borik", ArmorType.HELMET, Rarity.RARE);
+    public static final RegistryObject<Item> KELIN_KOILEK = clothes("kelin_koilek", ArmorType.CHESTPLATE, Rarity.RARE);
+    public static final RegistryObject<Item> KUMIS_BELBEU = accessory("kumis_belbeu",
+            () -> Attributes.ARMOR, 2.0, AttributeModifier.Operation.ADD_VALUE, false);
+    public static final RegistryObject<Item> ALTYN_BELBEU = accessory("altyn_belbeu",
+            () -> Attributes.KNOCKBACK_RESISTANCE, 0.3, AttributeModifier.Operation.ADD_VALUE, false);
+
+    public static final RegistryObject<Item> KELIN_SPAWN_EGG = egg("kelin", () -> ModEntities.KELIN.get());
+    public static final RegistryObject<Item> ZHYRSHY_SPAWN_EGG = egg("zhyrshy", () -> ModEntities.ZHYRSHY.get());
+
+    // ---------- v8: пещеры ----------
+    public static final RegistryObject<Item> ZHYLAN_TUMARY = accessory("zhylan_tumary",
+            () -> Attributes.MAX_HEALTH, 4.0, AttributeModifier.Operation.ADD_VALUE, true);
+    public static final RegistryObject<Item> SHOIYN_QULAQ = accessory("shoiyn_qulaq",
+            () -> Attributes.ARMOR_TOUGHNESS, 3.0, AttributeModifier.Operation.ADD_VALUE, false);
+    public static final RegistryObject<Item> QOLA = item("qola", p -> new Item(p.rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> QOLA_QANJAR = item("qola_qanjar",
+            p -> new Item(p.sword(ModMaterials.QOLA, 3.0f, -2.0f).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> QOLA_BALTA = item("qola_balta",
+            p -> new Item(p.axe(ModMaterials.QOLA, 6.0f, -3.0f).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> ZHYLAN_SPAWN_EGG = egg("zhylan", () -> ModEntities.ZHYLAN.get());
+    public static final RegistryObject<Item> ZHYN_SPAWN_EGG = egg("zhyn", () -> ModEntities.ZHYN.get());
+    public static final RegistryObject<Item> SHAHMARAN_SPAWN_EGG = egg("shahmaran", () -> ModEntities.SHAHMARAN.get());
+    public static final RegistryObject<Item> SHOIYNQULAQ_SPAWN_EGG = egg("shoiynqulaq", () -> ModEntities.SHOIYNQULAQ.get());
+    public static final RegistryObject<Item> DARWISH_SPAWN_EGG = egg("darwish", () -> ModEntities.DARWISH.get());
+
+    // ---------- v8: кухня, мебель, природа, инструменты ----------
+    public static final RegistryObject<Item> KAZAN = blockItem("kazan", ModBlocks.KAZAN);
+    public static final RegistryObject<Item> TANDYR = blockItem("tandyr", ModBlocks.TANDYR);
+    public static final RegistryObject<Item> KEPTIRGISH = blockItem("keptirgish", ModBlocks.KEPTIRGISH);
+    public static final RegistryObject<Item> SAMAUYR = blockItem("samauyr", ModBlocks.SAMAUYR);
+    public static final RegistryObject<Item> DASTARKHAN = blockItem("dastarkhan", ModBlocks.DASTARKHAN);
+    public static final RegistryObject<Item> KORPE = blockItem("korpe", ModBlocks.KORPE);
+    public static final RegistryObject<Item> KEBEZHE = blockItem("kebezhe", ModBlocks.KEBEZHE);
+    public static final RegistryObject<Item> BESIK = blockItem("besik", ModBlocks.BESIK);
+    public static final RegistryObject<Item> QYZGALDAQ_SHRENK = blockItem("qyzgaldaq_shrenk", ModBlocks.QYZGALDAQ_SHRENK);
+    public static final RegistryObject<Item> QYZGALDAQ_GREIG = blockItem("qyzgaldaq_greig", ModBlocks.QYZGALDAQ_GREIG);
+    public static final RegistryObject<Item> SELEU = blockItem("seleu", ModBlocks.SELEU);
+    public static final RegistryObject<Item> SIVERS_JAPYRAGY = blockItem("sivers_japyragy", ModBlocks.SIVERS_JAPYRAGY);
+    public static final RegistryObject<Item> ALMA_KOSHETI = blockItem("alma_kosheti", ModBlocks.ALMA_KOSHETI);
+    public static final RegistryObject<Item> SEKSEUIL = ITEMS.register("sekseuil", () -> new kz.ezhelgi.nature.FuelBlockItem(
+            ModBlocks.SEKSEUIL.get(), new Item.Properties().setId(ITEMS.key("sekseuil")).useBlockDescriptionPrefix(), 3200));
+    public static final RegistryObject<Item> SEKSEUIL_JAPYRAGY = blockItem("sekseuil_japyragy", ModBlocks.SEKSEUIL_JAPYRAGY);
+    public static final RegistryObject<Item> SEKSEUIL_KOSHETI = blockItem("sekseuil_kosheti", ModBlocks.SEKSEUIL_KOSHETI);
+
+    public static final RegistryObject<Item> NAN = item("nan", p -> new Item(p.food(ModFoods.NAN, ModFoods.NAN_EAT)));
+    public static final RegistryObject<Item> SAMSA = item("samsa", p -> new Item(p.food(ModFoods.SAMSA, ModFoods.SAMSA_EAT)));
+    public static final RegistryObject<Item> QAQ_ET = item("qaq_et", p -> new Item(p.food(ModFoods.QAQ_ET, ModFoods.MEAT_EAT)));
+    public static final RegistryObject<Item> SORPA = item("sorpa",
+            p -> new Item(p.food(ModFoods.SORPA, ModFoods.SORPA_EAT).usingConvertsTo(Items.BOWL).stacksTo(16)));
+    public static final RegistryObject<Item> QUYRDAQ = item("quyrdaq",
+            p -> new Item(p.food(ModFoods.QUYRDAQ, ModFoods.QUYRDAQ_EAT).usingConvertsTo(Items.BOWL).stacksTo(16)));
+    public static final RegistryObject<Item> PALAU = item("palau",
+            p -> new Item(p.food(ModFoods.PALAU, ModFoods.PALAU_EAT).usingConvertsTo(Items.BOWL).stacksTo(16)));
+    public static final RegistryObject<Item> NAURYZ_KOZHE = item("nauryz_kozhe",
+            p -> new Item(p.food(ModFoods.NAURYZ_KOZHE, ModFoods.NAURYZ_KOZHE_EAT).usingConvertsTo(Items.BOWL).stacksTo(16).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> QARA_SHAI = item("qara_shai",
+            p -> new Item(p.food(ModFoods.QARA_SHAI, ModFoods.QARA_SHAI_DRINK).usingConvertsTo(Items.GLASS_BOTTLE).stacksTo(16)));
+    public static final RegistryObject<Item> SUTTI_SHAI = item("sutti_shai",
+            p -> new Item(p.food(ModFoods.SUTTI_SHAI, ModFoods.SUTTI_SHAI_DRINK).usingConvertsTo(Items.GLASS_BOTTLE).stacksTo(16)));
+
+    public static final RegistryObject<Item> SYBYZGY = instrument("sybyzgy", InstrumentItem.Kind.SYBYZGY);
+    public static final RegistryObject<Item> ZHETIGEN = instrument("zhetigen", InstrumentItem.Kind.ZHETIGEN);
+    public static final RegistryObject<Item> SHANQOBYZ = instrument("shanqobyz", InstrumentItem.Kind.SHANQOBYZ);
+    public static final RegistryObject<Item> DAUYLPAZ = instrument("dauylpaz", InstrumentItem.Kind.DAUYLPAZ);
+    public static final RegistryObject<Item> QANBAQ_SPAWN_EGG = egg("qanbaq", () -> ModEntities.QANBAQ.get());
+
+    private static RegistryObject<Item> instrument(String name, InstrumentItem.Kind kind) {
+        return item(name, p -> new InstrumentItem(p.durability(250).rarity(Rarity.UNCOMMON), kind));
+    }
+
+    private static RegistryObject<Item> clothes(String name, ArmorType type, Rarity rarity) {
+        return item(name, p -> new ClothesItem(p.humanoidArmor(ModMaterials.cloth(name), type).rarity(rarity), name));
+    }
+
     private static RegistryObject<Item> armor(String name, net.minecraft.world.item.equipment.ArmorMaterial material,
                                               ArmorType type, Rarity rarity) {
         return item(name, p -> new Item(p.humanoidArmor(material, type).rarity(rarity)));

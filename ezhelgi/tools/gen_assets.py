@@ -1209,8 +1209,8 @@ def yurt_data():
             "structures": [{"structure": f"{NS}:{name}", "weight": 1}],
             "placement": {"type": "minecraft:random_spread", "spacing": spacing, "separation": separation, "salt": salt}})
 
-    pool("aul/start", [("aul/small", 5), ("aul/medium", 3), ("aul/large", 1)])
-    structure("aul", f"#{NS}:steppe", "aul/start", "beard_box", -1, 34, 8, 772031)
+    pool("aul/start", [("aul/small", 3), ("aul/medium", 4), ("aul/large", 3)])
+    structure("aul", f"#{NS}:steppe", "aul/start", "beard_box", -1, 30, 8, 772031)
     pool("camp/start", [("camp/camp_yurt", 1), ("camp/camp_fire", 1)])
     structure("camp", f"#{NS}:has_kurgan", "camp/start", "beard_thin", -1, 18, 6, 553901)
     pool("altyn_qorym/start", [("altyn_qorym", 1)])
@@ -2044,6 +2044,8 @@ if __name__ == "__main__":
     v6_assets.run(sys.modules[__name__])
     import v7_assets
     v7_assets.run(sys.modules[__name__])
+    import v8_assets
+    v8_assets.run(sys.modules[__name__])
     unlock_recipes()
     lang()
     print("assets done")

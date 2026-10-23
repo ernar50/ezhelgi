@@ -75,10 +75,57 @@ public class Dau extends Monster {
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
+    /** Пещерный дәу спит, пока его не разбудят шумом. */
+    private boolean sleeping;
+
+    public boolean isSleepingDau() {
+        return this.sleeping;
+    }
+
+    private void wake(ServerLevel level, @Nullable LivingEntity by) {
+        this.sleeping = false;
+        this.setPose(net.minecraft.world.entity.Pose.STANDING);
+        this.playSound(ModSounds.DAU_ROAR.get(), 3.0f, 0.7f);
+        level.sendParticles(ParticleTypes.ANGRY_VILLAGER, this.getX(), this.getY() + 3, this.getZ(), 6, 0.6, 0.3, 0.6, 0);
+        if (by != null) {
+            this.setTarget(by);
+        }
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        if (this.sleeping) {
+            wake(level, source.getEntity() instanceof LivingEntity l ? l : null);
+        }
+        return super.hurtServer(level, source, amount);
+    }
+
     @Override
     public void tick() {
         super.tick();
         if (!(this.level() instanceof ServerLevel level)) {
+            return;
+        }
+        if (this.sleeping) {
+            this.setPose(net.minecraft.world.entity.Pose.SLEEPING);
+            this.getNavigation().stop();
+            this.setTarget(null);
+            this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
+            if (this.tickCount % 60 == 0) {
+                this.playSound(SoundEvents.FOX_SLEEP, 2.5f, 0.35f);
+            }
+            if (this.tickCount % 10 == 0) {
+                for (Player p : level.players()) {
+                    if (p.isSpectator() || p.isCreative()) continue;
+                    double d = p.distanceTo(this);
+                    // шумит тот, кто бегает или идёт не крадучись рядом
+                    boolean loud = p.isSprinting() ? d < 12 : (!p.isShiftKeyDown() ? d < 6 : d < 2.5);
+                    if (loud) {
+                        wake(level, p);
+                        break;
+                    }
+                }
+            }
             return;
         }
         if (!this.prepared) {
@@ -170,11 +217,13 @@ public class Dau extends Monster {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putBoolean("Prepared", this.prepared);
+        output.putBoolean("Sleeping", this.sleeping);
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         this.prepared = input.getBooleanOr("Prepared", false);
+        this.sleeping = input.getBooleanOr("Sleeping", false);
     }
 }

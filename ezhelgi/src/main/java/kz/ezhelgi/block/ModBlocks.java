@@ -95,6 +95,62 @@ public final class ModBlocks {
     public static final RegistryObject<Block> AN_QUM = register("an_qum", AnQumBlock::new,
             p -> p.mapColor(MapColor.SAND).strength(0.5f).sound(SoundType.SAND));
 
+    /** Асық қатар — ряд асыков для игры асық ату. */
+    public static final RegistryObject<Block> ASYQ_QATAR = register("asyq_qatar", kz.ezhelgi.aul.AsyqBlock::new,
+            p -> p.mapColor(MapColor.SNOW).strength(0.3f).sound(SoundType.BONE_BLOCK).noOcclusion().noCollision());
+
+    // ---------- v8: кухня аула ----------
+    public static final RegistryObject<Block> KAZAN = register("kazan", kz.ezhelgi.kitchen.KazanBlock::new,
+            p -> p.mapColor(MapColor.COLOR_BLACK).strength(3.0f, 6.0f).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<Block> TANDYR = register("tandyr", kz.ezhelgi.kitchen.TandyrBlock::new,
+            p -> p.mapColor(MapColor.TERRACOTTA_ORANGE).strength(2.0f, 6.0f).sound(SoundType.MUD_BRICKS).noOcclusion()
+                    .lightLevel(s -> s.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.LIT) ? 12 : 0));
+    public static final RegistryObject<Block> KEPTIRGISH = register("keptirgish", kz.ezhelgi.kitchen.KeptirgishBlock::new,
+            p -> p.mapColor(MapColor.WOOD).strength(1.0f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
+    public static final RegistryObject<Block> SAMAUYR = register("samauyr", kz.ezhelgi.kitchen.SamauyrBlock::new,
+            p -> p.mapColor(MapColor.COLOR_ORANGE).strength(2.0f, 6.0f).sound(SoundType.COPPER).noOcclusion()
+                    .lightLevel(s -> s.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.LIT) ? 7 : 0));
+
+    // ---------- v8: мебель ----------
+    public static final RegistryObject<Block> DASTARKHAN = register("dastarkhan",
+            p -> new kz.ezhelgi.furniture.FacingBlock(p, Block.box(0, 0, 0, 16, 7, 16), Block.box(0, 0, 0, 16, 7, 16)),
+            p -> p.mapColor(MapColor.COLOR_RED).strength(1.0f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
+    public static final RegistryObject<Block> KORPE = register("korpe", kz.ezhelgi.furniture.KorpeBlock::new,
+            p -> p.mapColor(MapColor.COLOR_RED).strength(0.5f).sound(SoundType.WOOL).noOcclusion().ignitedByLava());
+    public static final RegistryObject<Block> KEBEZHE = register("kebezhe", kz.ezhelgi.furniture.KebezheBlock::new,
+            p -> p.mapColor(MapColor.WOOD).strength(2.5f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
+    public static final RegistryObject<Block> BESIK = register("besik", kz.ezhelgi.furniture.BesikBlock::new,
+            p -> p.mapColor(MapColor.WOOD).strength(1.0f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
+
+    // ---------- v8: природа ----------
+    public static final RegistryObject<Block> QYZGALDAQ_SHRENK = plant("qyzgaldaq_shrenk", kz.ezhelgi.nature.QyzgaldaqBlock::new, MapColor.COLOR_PINK);
+    public static final RegistryObject<Block> QYZGALDAQ_GREIG = plant("qyzgaldaq_greig", kz.ezhelgi.nature.QyzgaldaqBlock::new, MapColor.COLOR_RED);
+    public static final RegistryObject<Block> SELEU = plant("seleu",
+            p -> new net.minecraft.world.level.block.FlowerBlock(net.minecraft.world.effect.MobEffects.SPEED, 4.0f, p), MapColor.QUARTZ);
+    public static final RegistryObject<Block> SIVERS_JAPYRAGY = register("sivers_japyragy", kz.ezhelgi.nature.SiversLeavesBlock::new,
+            p -> leaves(p, MapColor.PLANT));
+    public static final RegistryObject<Block> ALMA_KOSHETI = register("alma_kosheti", p -> new kz.ezhelgi.nature.KochetBlock(p, false),
+            p -> p.mapColor(MapColor.PLANT).noCollision().randomTicks().instabreak().sound(SoundType.GRASS)
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+    public static final RegistryObject<Block> SEKSEUIL = register("sekseuil", net.minecraft.world.level.block.RotatedPillarBlock::new,
+            p -> p.mapColor(MapColor.TERRACOTTA_GRAY).strength(2.5f).sound(SoundType.WOOD).ignitedByLava());
+    public static final RegistryObject<Block> SEKSEUIL_JAPYRAGY = register("sekseuil_japyragy",
+            p -> new net.minecraft.world.level.block.TintedParticleLeavesBlock(0.01f, p), p -> leaves(p, MapColor.TERRACOTTA_LIGHT_GREEN));
+    public static final RegistryObject<Block> SEKSEUIL_KOSHETI = register("sekseuil_kosheti", p -> new kz.ezhelgi.nature.KochetBlock(p, true),
+            p -> p.mapColor(MapColor.PLANT).noCollision().randomTicks().instabreak().sound(SoundType.GRASS)
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+
+    private static RegistryObject<Block> plant(String name, Function<BlockBehaviour.Properties, Block> factory, MapColor color) {
+        return register(name, factory, p -> p.mapColor(color).noCollision().instabreak().sound(SoundType.GRASS)
+                .offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
+    }
+
+    private static BlockBehaviour.Properties leaves(BlockBehaviour.Properties p, MapColor color) {
+        return p.mapColor(color).strength(0.2f).randomTicks().sound(SoundType.GRASS).noOcclusion()
+                .isSuffocating((s, l, pos) -> false).ignitedByLava()
+                .pushReaction(net.minecraft.world.level.material.PushReaction.POPPED).isRedstoneConductor((s, l, pos) -> false);
+    }
+
     private static RegistryObject<Block> flag(String name) {
         return register(name, TuBlock::new,
                 p -> p.mapColor(MapColor.WOOD).strength(1.0f).sound(SoundType.WOOD).noOcclusion().ignitedByLava());

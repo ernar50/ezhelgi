@@ -71,7 +71,7 @@ import java.util.function.Supplier;
  * В аулах иногда встречаются великие люди: Абай, Шоқан Уәлиханов и Әл-Фараби.
  */
 public class SteppeVillager extends AbstractVillager {
-    public enum Kind { COMMON, ABAI, SHOQAN, FARABI, AQSAQAL, KUISHI, KERUENSHI }
+    public enum Kind { COMMON, ABAI, SHOQAN, FARABI, AQSAQAL, KUISHI, KERUENSHI, AQYN, KELIN, ZHYRSHY, DARWISH }
 
     public static final int VARIANTS = 20;
     private static final EntityDataAccessor<Integer> VARIANT =
@@ -107,6 +107,10 @@ public class SteppeVillager extends AbstractVillager {
         if (t == ModEntities.AQSAQAL.get()) return Kind.AQSAQAL;
         if (t == ModEntities.KUISHI.get()) return Kind.KUISHI;
         if (t == ModEntities.KERUENSHI.get()) return Kind.KERUENSHI;
+        if (t == ModEntities.AQYN.get()) return Kind.AQYN;
+        if (t == ModEntities.KELIN.get()) return Kind.KELIN;
+        if (t == ModEntities.ZHYRSHY.get()) return Kind.ZHYRSHY;
+        if (t == ModEntities.DARWISH.get()) return Kind.DARWISH;
         return Kind.COMMON;
     }
 
@@ -142,10 +146,30 @@ public class SteppeVillager extends AbstractVillager {
         this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0f));
     }
 
+    /** Купец ярмарки (жәрмеңке): торгует редкими товарами и уезжает на следующий день. */
+    private boolean fair;
+    private long fairDay = -1;
+
+    public void makeFair(net.minecraft.core.BlockPos home, long day) {
+        this.fair = true;
+        this.fairDay = day;
+        this.prepared = true;
+        this.setHomeTo(home, 8);
+    }
+
+    public boolean isFair() {
+        return this.fair;
+    }
+
     @Override
     public void tick() {
         super.tick();
         if (!(this.level() instanceof ServerLevel level)) {
+            return;
+        }
+        if (this.fair && this.tickCount % 100 == 0 && level.getOverworldClockTime() / 24000L != this.fairDay && !this.isTrading()) {
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD, this.getX(), this.getY() + 1, this.getZ(), 8, 0.3, 0.5, 0.3, 0.02);
+            this.discard();
             return;
         }
         if (this.isBaby() && this.getAge() > -2000) {
@@ -157,7 +181,8 @@ public class SteppeVillager extends AbstractVillager {
         if (!this.prepared) {
             this.prepared = true;
             if (!this.hasHome() && this.kind() != Kind.KERUENSHI) {
-                this.setHomeTo(this.blockPosition(), this.kind() == Kind.KUISHI || this.kind() == Kind.AQSAQAL ? 12 : 22);
+                Kind k = this.kind();
+                this.setHomeTo(this.blockPosition(), k == Kind.KUISHI || k == Kind.AQSAQAL || k == Kind.ZHYRSHY || k == Kind.AQYN ? 10 : (k == Kind.DARWISH ? 5 : 22));
             }
             if (this.kind() == Kind.KUISHI) {
                 this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(ModItems.DOMBYRA.get()));
@@ -173,7 +198,7 @@ public class SteppeVillager extends AbstractVillager {
             }
             if (this.maybeNotable) {
                 this.maybeNotable = false;
-                if (this.getRandom().nextFloat() < 0.35f) {
+                if (this.getRandom().nextFloat() < 0.6f) {
                     this.becomeNotable(level);
                 }
             }
@@ -197,11 +222,21 @@ public class SteppeVillager extends AbstractVillager {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        if (this.isBaby() && this.isAlive() && hand == InteractionHand.MAIN_HAND && stack.is(ModItems.ASYQ.get())) {
+            if (this.level() instanceof ServerLevel server) {
+                tradeAsyq(server, player, stack);
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (stack.getItem() instanceof net.minecraft.world.item.SpawnEggItem || !this.isAlive() || this.isTrading() || this.isBaby()) {
             return super.mobInteract(player, hand);
         }
         if (hand == InteractionHand.MAIN_HAND) {
             player.awardStat(Stats.TALKED_TO_VILLAGER);
+        }
+        if (this.level() instanceof ServerLevel server && hand == InteractionHand.MAIN_HAND
+                && kz.ezhelgi.aul.AulEvents.toiTreat(server, this, player)) {
+            return InteractionResult.SUCCESS;
         }
         if (!this.level().isClientSide()) {
             if (this.getOffers().isEmpty()) {
@@ -281,7 +316,7 @@ public class SteppeVillager extends AbstractVillager {
 
         @Override
         public boolean canUse() {
-            if (this.mob.kind() != Kind.KERUENSHI || this.mob.isTrading() || --this.cooldown > 0) return false;
+            if (this.mob.kind() != Kind.KERUENSHI || this.mob.fair || this.mob.isTrading() || --this.cooldown > 0) return false;
             this.cooldown = 60;
             return true;
         }
@@ -302,6 +337,35 @@ public class SteppeVillager extends AbstractVillager {
         public boolean canContinueToUse() {
             return !this.mob.getNavigation().isDone() && !this.mob.isTrading();
         }
+    }
+
+    /** Дети меняют асыки на угощение, сакское золото и шаблоны отделки. */
+    private void tradeAsyq(ServerLevel level, Player player, ItemStack stack) {
+        int n = stack.getCount();
+        ItemStack reward;
+        int cost;
+        if (n >= 16) {
+            cost = 16;
+            reward = kz.ezhelgi.quest.Quests.randomTemplate(this.getRandom());
+        } else if (n >= 8) {
+            cost = 8;
+            reward = new ItemStack(ModItems.SAKA_GOLD.get(), 2);
+        } else if (n >= 4) {
+            cost = 4;
+            reward = new ItemStack(ModItems.BAURSAK.get(), 4);
+        } else {
+            player.sendOverlayMessage(Component.translatable("message.ezhelgi.asyq.child_need"));
+            return;
+        }
+        if (!player.getAbilities().instabuild) {
+            stack.shrink(cost);
+        }
+        if (!player.getInventory().add(reward)) {
+            player.spawnAtLocation(level, reward);
+        }
+        player.sendSystemMessage(Component.translatable("message.ezhelgi.asyq.child_trade", cost, reward.getHoverName()));
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER, this.getX(), this.getY() + 1, this.getZ(), 5, 0.3, 0.3, 0.3, 0);
+        this.playSound(SoundEvents.VILLAGER_YES, 1.0f, 1.6f);
     }
 
     @Override
@@ -395,7 +459,7 @@ public class SteppeVillager extends AbstractVillager {
                 }
                 fixed.add(buy(ModItems.QOLJAZBA.get(), 1, 3));
             }
-            case AQSAQAL -> {
+            case AQSAQAL, AQYN, KELIN, ZHYRSHY, DARWISH -> {
             }
             case KUISHI -> {
                 fixed.add(sell(3, ModItems.DOMBYRA, 1));
@@ -407,6 +471,10 @@ public class SteppeVillager extends AbstractVillager {
                 fixed.add(buy(Items.NOTE_BLOCK, 2, 1));
             }
             case KERUENSHI -> {
+                if (this.fair) {
+                    fairTrades(level, random, pool);
+                    break;
+                }
                 pool.add(sell(1, Items.SUGAR, 12));
                 pool.add(sell(1, Items.COCOA_BEANS, 8));
                 pool.add(sell(2, Items.AMETHYST_SHARD, 8));
@@ -494,6 +562,31 @@ public class SteppeVillager extends AbstractVillager {
         }
     }
 
+    /** Редкие товары ярмарки: книги, инструменты, наряды, самауыр, саженцы. */
+    private static void fairTrades(ServerLevel level, RandomSource random, List<MerchantOffer> pool) {
+        ItemStack book = randomEnchantedBook(level, random);
+        if (!book.isEmpty()) pool.add(sell(6, book, 2));
+        pool.add(sell(5, ModItems.SYBYZGY, 1));
+        pool.add(sell(7, ModItems.ZHETIGEN, 1));
+        pool.add(sell(4, ModItems.SHANQOBYZ, 1));
+        pool.add(sell(10, ModItems.DAUYLPAZ, 1));
+        pool.add(sell(6, ModItems.SAMAUYR, 1));
+        pool.add(sell(4, ModItems.KAZAN, 1));
+        pool.add(sell(5, ModItems.KEBEZHE, 1));
+        pool.add(sell(12, ModItems.SAUKELE, 1));
+        pool.add(sell(8, ModItems.UKI_BORIK, 1));
+        pool.add(sell(6, ModItems.SHAPAN, 1));
+        pool.add(sell(9, ModItems.ALTYN_BELBEU, 1));
+        pool.add(sell(3, ModItems.ALMA_KOSHETI, 2));
+        pool.add(sell(2, ModItems.SEKSEUIL, 8));
+        pool.add(sell(14, Items.DIAMOND, 1));
+        pool.add(sell(3, Items.NAME_TAG, 1));
+        pool.add(sell(10, ModItems.SYNAR_MUIZ_TEMPLATE, 1));
+        pool.add(sell(10, ModItems.TUMARSHA_TEMPLATE, 1));
+        pool.add(buy(Items.DIAMOND, 1, 6));
+        pool.add(buy(Items.EMERALD, 1, 1));
+    }
+
     private static ItemStack randomEnchantedBook(ServerLevel level, RandomSource random) {
         Optional<HolderSet.Named<Enchantment>> tag = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
                 .get(EnchantmentTags.TRADEABLE);
@@ -555,6 +648,8 @@ public class SteppeVillager extends AbstractVillager {
         output.putBoolean("MaybeNotable", this.maybeNotable);
         output.putBoolean("Prepared", this.prepared);
         output.putInt("KuiPart", this.kuiPart);
+        output.putBoolean("Fair", this.fair);
+        output.putLong("FairDay", this.fairDay);
         if (this.travelTarget != null) {
             output.putLong("TravelTarget", this.travelTarget.asLong());
         }
@@ -568,6 +663,8 @@ public class SteppeVillager extends AbstractVillager {
         this.maybeNotable = input.getBooleanOr("MaybeNotable", false);
         this.prepared = input.getBooleanOr("Prepared", false);
         this.kuiPart = input.getIntOr("KuiPart", 0);
+        this.fair = input.getBooleanOr("Fair", false);
+        this.fairDay = input.getLongOr("FairDay", -1L);
         long target = input.getLongOr("TravelTarget", Long.MIN_VALUE);
         this.travelTarget = target == Long.MIN_VALUE ? null : net.minecraft.core.BlockPos.of(target);
     }

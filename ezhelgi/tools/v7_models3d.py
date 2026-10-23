@@ -48,6 +48,10 @@ def shield_elements(boss=True):
     # рукоять
     els.append({"from": [7, 5, 4], "to": [9, 11, 9], "faces": {
         f: _face("#back", [8, 12, 10, 16]) for f in ("north", "east", "west", "up", "down")}})
+    # ванильный щит рисуется со сдвигом: центр щита — в точке (0, 0), а не (8, 8)
+    for el in els:
+        el["from"] = [round(v - 8, 3) for v in el["from"]]
+        el["to"] = [round(v - 8, 3) for v in el["to"]]
     return els
 
 

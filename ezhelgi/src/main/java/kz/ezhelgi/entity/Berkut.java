@@ -34,18 +34,19 @@ public class Berkut extends Parrot {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Parrot.createAttributes()
-                .add(Attributes.MAX_HEALTH, 16.0)
-                .add(Attributes.FLYING_SPEED, 0.7)
-                .add(Attributes.MOVEMENT_SPEED, 0.3)
-                .add(Attributes.ATTACK_DAMAGE, 4.0)
-                .add(Attributes.FOLLOW_RANGE, 32.0);
+                .add(Attributes.MAX_HEALTH, 24.0)
+                .add(Attributes.FLYING_SPEED, 1.15)
+                .add(Attributes.MOVEMENT_SPEED, 0.45)
+                .add(Attributes.ATTACK_DAMAGE, 7.0)
+                .add(Attributes.ARMOR, 2.0)
+                .add(Attributes.FOLLOW_RANGE, 48.0);
     }
 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.4, true));
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 2.0, true));
         this.goalSelector.addGoal(3, new FollowOwnerGoal(this, 1.2, 8.0f, 2.0f));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomFlyingGoal(this, 1.0));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8.0f));
@@ -53,6 +54,37 @@ public class Berkut extends Parrot {
         this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Rabbit.class, false));
+        // беркут охотится на лис, кур, тушканчиков и корсаков
+        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.animal.fox.Fox.class, false));
+        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.animal.chicken.Chicken.class, false,
+                (target, level) -> !this.isTame()));
+        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, kz.ezhelgi.entity.animal.Qarsaq.class, false));
+        this.targetSelector.addGoal(5, new net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal(this));
+    }
+
+    /** Удар когтями сверху: сильный, отбрасывает и ненадолго оглушает (замедление). */
+    @Override
+    public boolean doHurtTarget(net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.Entity target) {
+        boolean hit = super.doHurtTarget(level, target);
+        if (hit && target instanceof net.minecraft.world.entity.LivingEntity living) {
+            living.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOWNESS, 40, 1));
+            net.minecraft.world.phys.Vec3 push = target.position().subtract(this.position()).multiply(1, 0, 1).normalize().scale(0.5);
+            living.push(push.x, 0.25, push.z);
+            this.playSound(SoundEvents.PHANTOM_BITE, 1.0f, 0.8f);
+        }
+        return hit;
+    }
+
+    /** Пикирование: когда цель близко внизу — резко устремляется к ней. */
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        net.minecraft.world.entity.LivingEntity target = this.getTarget();
+        if (!this.level().isClientSide() && target != null && target.isAlive() && this.distanceToSqr(target) < 14 * 14
+                && this.getY() > target.getY() + 1.5 && this.tickCount % 10 == 0) {
+            net.minecraft.world.phys.Vec3 dir = target.position().add(0, target.getBbHeight() * 0.5, 0).subtract(this.position()).normalize();
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.4).add(dir.scale(0.7)));
+        }
     }
 
     private static boolean isMeat(ItemStack stack) {

@@ -87,6 +87,22 @@ public final class ModMaterials {
     public static final ArmorMaterial TYMAQ = new ArmorMaterial(9, defense(1, 2, 3, 2, 3), 15,
             SoundEvents.ARMOR_EQUIP_LEATHER, 0.0f, 0.0f, FUR_REPAIRABLE, asset("tymaq"));
 
+    public static final TagKey<Item> QOLA_REPAIRABLE = TagKey.create(Registries.ITEM,
+            Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "qola_repairable"));
+    /** Қола — бронза древних рудокопов: чуть слабее железа, но хорошо зачаровывается. */
+    public static final ToolMaterial QOLA = new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL,
+            420, 6.5f, 2.0f, 18, QOLA_REPAIRABLE);
+
+    // ------------------------------------------------------------------ v8: национальная одежда
+    public static final TagKey<Item> CLOTH_REPAIRABLE = TagKey.create(Registries.ITEM,
+            Identifier.fromNamespaceAndPath(EzhelgiMod.MODID, "cloth_repairable"));
+
+    /** Одежда почти не защищает, но даёт бонусы (см. ModEvents). */
+    public static ArmorMaterial cloth(String asset) {
+        return new ArmorMaterial(8, defense(1, 1, 2, 1, 1), 18, SoundEvents.ARMOR_EQUIP_LEATHER,
+                0.0f, 0.0f, CLOTH_REPAIRABLE, asset(asset));
+    }
+
     private static Map<ArmorType, Integer> defense(int boots, int legs, int chest, int helmet, int body) {
         Map<ArmorType, Integer> map = new EnumMap<>(ArmorType.class);
         map.put(ArmorType.BOOTS, boots);

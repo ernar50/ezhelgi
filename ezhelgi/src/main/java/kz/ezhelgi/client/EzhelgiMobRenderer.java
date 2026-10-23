@@ -14,11 +14,17 @@ import net.minecraft.world.entity.TamableAnimal;
 
 /** Простой рендерер для животных мода с собственными моделями. */
 public class EzhelgiMobRenderer<T extends Mob> extends MobRenderer<T, EzhelgiRenderState, EntityModel<EzhelgiRenderState>> {
-    private final Identifier texture;
+    private final java.util.function.Function<T, Identifier> texture;
     private final float scale;
 
     public EzhelgiMobRenderer(EntityRendererProvider.Context context, EntityModel<EzhelgiRenderState> model,
                               float shadowRadius, Identifier texture, float scale) {
+        this(context, model, shadowRadius, e -> texture, scale);
+    }
+
+    /** Текстура зависит от сущности (например, вид жына). */
+    public EzhelgiMobRenderer(EntityRendererProvider.Context context, EntityModel<EzhelgiRenderState> model,
+                              float shadowRadius, java.util.function.Function<T, Identifier> texture, float scale) {
         super(context, model, shadowRadius);
         this.texture = texture;
         this.scale = scale;
@@ -37,7 +43,9 @@ public class EzhelgiMobRenderer<T extends Mob> extends MobRenderer<T, EzhelgiRen
         state.saddled = !entity.getItemBySlot(EquipmentSlot.SADDLE).isEmpty();
         state.male = (entity instanceof kz.ezhelgi.entity.Saiga saiga && saiga.isMale())
                 || (entity instanceof kz.ezhelgi.entity.animal.WildAnimal wild && wild.isMale());
-        state.attacking = entity.isAggressive();
+        state.attacking = entity.isAggressive()
+                || (entity instanceof kz.ezhelgi.entity.cave.Shoiynqulaq sq && sq.isClapping());
+        state.texture = this.texture.apply(entity);
         if (entity instanceof kz.ezhelgi.entity.Aidahar) {
             state.flying = true;
         }
@@ -49,7 +57,7 @@ public class EzhelgiMobRenderer<T extends Mob> extends MobRenderer<T, EzhelgiRen
 
     @Override
     public Identifier getTextureLocation(EzhelgiRenderState state) {
-        return this.texture;
+        return state.texture;
     }
 
     @Override

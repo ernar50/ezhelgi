@@ -74,4 +74,40 @@ public final class ModFoods {
     public static final FoodProperties PISKEN_AN_ETI = new FoodProperties.Builder()
             .nutrition(8).saturationModifier(0.85f).build();
     public static final Consumable MEAT_EAT = Consumables.defaultFood().build();
+
+    // ---------- v8: кухня аула ----------
+    private static ApplyStatusEffectsConsumeEffect fx(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> e, int sec, int amp) {
+        return new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(e, sec * 20, amp), 1.0f);
+    }
+
+    /** Нан из тандыра. */
+    public static final FoodProperties NAN = new FoodProperties.Builder().nutrition(6).saturationModifier(0.7f).build();
+    public static final Consumable NAN_EAT = Consumables.defaultFood().consumeSeconds(1.2f).build();
+    /** Самса — пирожок с мясом из тандыра: сытно и быстро. */
+    public static final FoodProperties SAMSA = new FoodProperties.Builder().nutrition(8).saturationModifier(0.9f).build();
+    public static final Consumable SAMSA_EAT = Consumables.defaultFood().consumeSeconds(1.0f).onConsume(fx(MobEffects.ABSORPTION, 60, 0)).build();
+    /** Қақ ет — вяленое мясо: в дорогу. */
+    public static final FoodProperties QAQ_ET = new FoodProperties.Builder().nutrition(6).saturationModifier(1.0f).build();
+    /** Сорпа — горячий бульон: лечит и греет. */
+    public static final FoodProperties SORPA = new FoodProperties.Builder().nutrition(6).saturationModifier(0.8f).alwaysEdible().build();
+    public static final Consumable SORPA_EAT = Consumables.defaultDrink().onConsume(fx(MobEffects.REGENERATION, 20, 1))
+            .onConsume(fx(MobEffects.HEALTH_BOOST, 180, 0)).build();
+    /** Қуырдақ — жаркое: сила. */
+    public static final FoodProperties QUYRDAQ = new FoodProperties.Builder().nutrition(10).saturationModifier(0.9f).build();
+    public static final Consumable QUYRDAQ_EAT = Consumables.defaultFood().onConsume(fx(MobEffects.STRENGTH, 180, 0)).build();
+    /** Палау — плов: долгая сытость и защита. */
+    public static final FoodProperties PALAU = new FoodProperties.Builder().nutrition(12).saturationModifier(1.1f).build();
+    public static final Consumable PALAU_EAT = Consumables.defaultFood().onConsume(fx(MobEffects.ABSORPTION, 120, 1))
+            .onConsume(fx(MobEffects.RESISTANCE, 120, 0)).build();
+    /** Наурыз-көже из семи продуктов: удача и благополучие на весь день. */
+    public static final FoodProperties NAURYZ_KOZHE = new FoodProperties.Builder().nutrition(10).saturationModifier(1.2f).alwaysEdible().build();
+    public static final Consumable NAURYZ_KOZHE_EAT = Consumables.defaultDrink().onConsume(fx(MobEffects.LUCK, 600, 1))
+            .onConsume(fx(MobEffects.REGENERATION, 60, 0)).onConsume(fx(MobEffects.HERO_OF_THE_VILLAGE, 600, 0)).build();
+    /** Қара шай — чёрный чай: бодрость. */
+    public static final FoodProperties QARA_SHAI = new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).alwaysEdible().build();
+    public static final Consumable QARA_SHAI_DRINK = Consumables.defaultDrink().onConsume(fx(MobEffects.HASTE, 120, 0)).build();
+    /** Сүтті шай — чай с молоком из самауыра: бодрость и меньше голода. */
+    public static final FoodProperties SUTTI_SHAI = new FoodProperties.Builder().nutrition(4).saturationModifier(1.2f).alwaysEdible().build();
+    public static final Consumable SUTTI_SHAI_DRINK = Consumables.defaultDrink().onConsume(fx(MobEffects.HASTE, 300, 0))
+            .onConsume(fx(MobEffects.SATURATION, 1, 0)).build();
 }
