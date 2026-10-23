@@ -66,7 +66,7 @@ def aul_assets():
         W(f"{D}/tags/worldgen/structure/zhyr_{epic}.json", {"values": [e(s) for s in structs]})
     sh = G.shaped
     sh("saqa", [" N ", "NAN", " N "], {"N": "minecraft:iron_nugget", "A": e("asyq")}, e("saqa"))
-    sh("asyq_qatar", ["AAAAA"], {"A": e("asyq")}, e("asyq_qatar"))
+    sh("asyq_qatar", ["AAA", "A A"], {"A": e("asyq")}, e("asyq_qatar"))
     sh("shapan", ["W W", "WGW", "WWW"], {"W": "minecraft:blue_wool", "G": "minecraft:gold_nugget"}, e("shapan"), category="equipment")
     sh("kamzol", ["W W", "WGW"], {"W": "minecraft:red_wool", "G": "minecraft:gold_nugget"}, e("kamzol"), category="equipment")
     sh("taqiya", ["GWG"], {"W": "minecraft:green_wool", "G": "minecraft:gold_nugget"}, e("taqiya"), category="equipment")
